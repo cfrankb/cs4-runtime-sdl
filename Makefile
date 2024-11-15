@@ -8,10 +8,19 @@ BPATH=build
 BNAME=cs4-sdl
 TARGET=$(BPATH)/$(BNAME)
 TEMPLATE=
-DEPS=$(BPATH)/FrameSet$(EXT) $(BPATH)/Frame$(EXT) $(BPATH)/DotArray$(EXT) $(BPATH)/helper$(EXT) $(BPATH)/PngMagic$(EXT) $(BPATH)/FileWrap$(EXT)
+DEPS=$(BPATH)/main$(EXT) $(BPATH)/maparch$(EXT) $(BPATH)/map$(EXT) $(BPATH)/FrameSet$(EXT) $(BPATH)/Frame$(EXT) $(BPATH)/DotArray$(EXT) $(BPATH)/helper$(EXT) $(BPATH)/PngMagic$(EXT) $(BPATH)/FileWrap$(EXT)
 EXT=.o
 
 all: $(TARGET)
+
+$(BPATH)/main$(EXT): src/main.cpp
+	$(CXX) $(STD) $(CXXFLAGS) -c $< $(INC) -o $@
+
+$(BPATH)/maparch$(EXT): src/maparch.cpp src/maparch.h
+	$(CXX) $(STD) $(CXXFLAGS) -c $< $(INC) -o $@
+
+$(BPATH)/map$(EXT): src/map.cpp src/map.h
+	$(CXX) $(STD) $(CXXFLAGS) -c $< $(INC) -o $@
 
 $(BPATH)/FrameSet$(EXT): src/shared/FrameSet.cpp src/shared/FrameSet.h
 	$(CXX) $(STD) $(CXXFLAGS) -c $< $(INC) -o $@

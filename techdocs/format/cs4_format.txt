@@ -1,3 +1,6 @@
+Old version (.cs4)
+
 Level grid is 64 x 64
 First 8k are the tiles
 the next 8k are the attributes
+
