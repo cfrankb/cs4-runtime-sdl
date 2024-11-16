@@ -3,12 +3,19 @@
 #include "shared/Frame.h"
 #include "maparch.h"
 #include "map.h"
+#include <cstdio>
+#include <cstring>
 
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
 #define FILE_OFFSET 7
 #define TILE_SIZE 16
 #define TILE_BYTES (TILE_SIZE * TILE_SIZE)
+#define MAIN_ARCH_FILE "data/levels.mapz-cs4"
+#define CS4_TILES "data/cs4tiles.obl"
+#define CS4_EDIT "data/cs4edit.obl"
+#define CS4_ANIMZ "data/cs4animz.obl"
+#define CS4_NUM "data/cs4num.obl"
 
 // original color palette
 const uint32_t g_palette[] = {
@@ -45,36 +52,164 @@ const uint32_t g_palette[] = {
     0xff2f432f, 0xff33432f, 0xff37432f, 0xff3f432f, 0xff43432f, 0xff433f2f, 0xff43372f, 0xff43332f,
     0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000};
 
+struct leveldef_t
+{
+    const char *fname;
+    const char *name;
+};
+
+const leveldef_t g_files[] = {
+    {"lee01.cs4", "grab the diamonds_ ha! ha! ha!ha!"},
+    {"lee02.cs4", "figure out which one you must pull."},
+    {"lee03.cs4", "even andrea can win this one."},
+    {"lee04.cs4", "they are ugly people like julie jean."},
+    {"lea01.cs4", "sonia has pulled a fast one."},
+    {"lea02.cs4", "the pumpkin collector is here."},
+    {"lea03.cs4", "learning how to jump is easy."},
+    {"lea04.cs4", "you must learn about electricity."},
+    {"lea05.cs4", "don't let them catch up."},
+    {"lev01.cs4", "The inner level is here"},
+    {"lev02.cs4", "don't go for the expected."},
+    {"lev03.cs4", "watch your back _"},
+    {"lev04.cs4", "the towers of death."},
+    {"lev05.cs4", "This one will look easy_"},
+};
+
+bool generateScreenshots()
+{
+    struct obl5data_t
+    {
+        CFrameSet frameSet;
+        const char *filename;
+    };
+
+    obl5data_t g_frameSets[] = {
+        {CFrameSet(), "data/cs4animz.obl"},
+        {CFrameSet(), "data/cs4edit.obl"},
+        {CFrameSet(), "data/cs4num.obl"},
+        {CFrameSet(), "data/cs4tiles.obl"},
+    };
+
+    enum
+    {
+        SET_ANIMZ,
+        SET_EDIT,
+        SET_NUM,
+        SET_TILES,
+        SET_COUNT
+    };
+
+    const uint16_t mapLen = 128;
+    const uint16_t mapHei = 64;
+    CMapArch arch;
+    const size_t count = sizeof(g_files) / sizeof(leveldef_t);
+
+    // read index from archfile
+    IndexVector index;
+    if (!CMapArch::indexFromFile(MAIN_ARCH_FILE, index))
+    {
+        printf("can't read arch index\n");
+        return false;
+    }
+
+    // read framesets
+    CFileWrap file;
+    for (int i = 0; i < SET_COUNT; ++i)
+    {
+        auto &set = g_frameSets[i];
+        if (!file.open(set.filename))
+        {
+            printf("failed to open %s\n", set.filename);
+            return false;
+        }
+        set.frameSet.read(file);
+        file.close();
+    }
+
+    if (!file.open(MAIN_ARCH_FILE))
+    {
+        printf("failed to open archfile\n");
+        return false;
+    }
+
+    CMap map;
+    for (int i = 0; i < count; ++i)
+    {
+        // readmap
+        file.seek(index[i]);
+        map.read(file);
+
+        char tmp[16];
+        strcpy(tmp, g_files[i].fname);
+        char *p = strstr(tmp, ".");
+        if (p != nullptr)
+        {
+            *p = 0;
+        }
+
+        char target[128];
+        sprintf(target, "techdocs/images/%s.png", tmp);
+        CFrame frame(mapLen * TILE_SIZE, mapHei * TILE_SIZE);
+        frame.fill(0xff000000);
+
+        enum
+        {
+            FLAG_UP_DOWN = 4,
+            UP_OFFSET = 0,
+            DOWN_OFFSET = 2,
+            FILTER_ENV = 3, // WATER, LAVA, SLIM
+            ENV_FRAMES = 3,
+            FILTER_ATTR = 0xf8 // STOP 00 01 02 etc
+        };
+
+        for (int y = 0; y < mapHei; ++y)
+        {
+            for (int x = 0; x < mapLen; ++x)
+            {
+                const auto &tile = map.at(x, y);
+                const auto &attr = map.getAttr(x, y);
+                if (attr & 0x80)
+                {
+                    printf("%s (%d %d) %.2x\n", tmp, x, y, attr);
+                }
+                if (attr & FILTER_ENV)
+                {
+                    auto bframe = ENV_FRAMES * ((attr & FILTER_ENV) - 1) + ((attr & FLAG_UP_DOWN) ? DOWN_OFFSET : UP_OFFSET);
+                    frame.drawAt(*(g_frameSets[SET_ANIMZ].frameSet[bframe]), x * TILE_SIZE, y * TILE_SIZE, true);
+                }
+                frame.drawAt(*(g_frameSets[SET_EDIT].frameSet[tile]), x * TILE_SIZE, y * TILE_SIZE, true);
+                if (attr & FILTER_ATTR)
+                {
+                    auto num = (attr >> 3) & 0x1f;
+                    frame.drawAt(*(g_frameSets[SET_NUM].frameSet[num]), x * TILE_SIZE, y * TILE_SIZE, true);
+                }
+            }
+        }
+        CFileWrap tfile;
+        if (!tfile.open(target, "wb"))
+        {
+            printf("can't write %s\n", target);
+            return false;
+        }
+        uint8_t *png;
+        int size;
+        frame.toPng(png, size);
+        tfile.write(png, size);
+        delete[] png;
+        tfile.close();
+    }
+
+    file.close();
+    return true;
+}
+
 bool createArchive()
 {
     const uint16_t mapLen = 128;
     const uint16_t mapHei = 64;
 
-    struct leveldef_t
-    {
-        const char *fname;
-        const char *name;
-    };
-
-    const leveldef_t files[] = {
-        {"lee01.cs4", "grab the diamonds_ ha! ha! ha!ha!"},
-        {"lee02.cs4", "figure out which one you must pull."},
-        {"lee03.cs4", "even andrea can win this one."},
-        {"lee04.cs4", "they are ugly people like julie jean."},
-        {"lea01.cs4", "sonia has pulled a fast one."},
-        {"lea02.cs4", "the pumpkin collector is here."},
-        {"lea03.cs4", "learning how to jump is easy."},
-        {"lea04.cs4", "you must learn about electricity."},
-        {"lea05.cs4", "don't let them catch up."},
-        {"lev01.cs4", "The inner level is here"},
-        {"lev02.cs4", "don't go for the expected."},
-        {"lev03.cs4", "watch your back _"},
-        {"lev04.cs4", "the towers of death."},
-        {"lev05.cs4", "This one will look easy_"},
-    };
-
     CMapArch arch;
-    const size_t count = sizeof(files) / sizeof(leveldef_t);
+    const size_t count = sizeof(g_files) / sizeof(leveldef_t);
 
     uint32_t index[count];
     uint8_t *mapData = new uint8_t[mapLen * mapHei];
@@ -84,9 +219,9 @@ bool createArchive()
         CMap *map = new CMap(mapLen, mapHei);
 
         CFileWrap sfile;
-        const char *fname = files[i].fname;
-        std::string path = std::string("techdocs/data/") + files[i].fname;
-        map->setTitle(files[i].name);
+        const char *fname = g_files[i].fname;
+        std::string path = std::string("techdocs/data/") + g_files[i].fname;
+        map->setTitle(g_files[i].name);
 
         if (!sfile.open(path.c_str()))
         {
@@ -104,7 +239,6 @@ bool createArchive()
                 const auto &c = linePtr[x];
                 if (c)
                 {
-                    printf("x=%d y=%d c=0x%.2x\n", x, y, c);
                     map->setAttr(x, y, c);
                 }
             }
@@ -113,7 +247,7 @@ bool createArchive()
     }
 
     delete[] mapData;
-    arch.write("data/levels.mapz-cs4");
+    arch.write(MAIN_ARCH_FILE);
 
     return true;
 }
@@ -158,16 +292,22 @@ bool convert(const char *src, const char *dest)
         fs.add(frame);
     }
     fs.write(tfile);
+    printf("%s %d\n", src, count);
     tfile.close();
     delete[] pixels;
     return true;
 }
 
+void generateData()
+{
+    convert("techdocs/data/cs4ani.mcg", CS4_ANIMZ);
+    convert("techdocs/data/cs4edit.mcg", CS4_EDIT);
+    convert("techdocs/data/cs4graph.mcg", CS4_TILES);
+    convert("techdocs/data/cs4num.mcg", CS4_NUM);
+    createArchive();
+}
+
 int main(int argc, char *args[])
 {
-    convert("techdocs/data/cs4ani.mcg", "data/cs4animz.obl");
-    convert("techdocs/data/cs4edit.mcg", "data/cs4edit.obl");
-    convert("techdocs/data/cs4graph.mcg", "data/cs4tiles.obl");
-    convert("techdocs/data/cs4num.mcg", "data/cs4num.obl");
-    createArchive();
+    generateScreenshots();
 }

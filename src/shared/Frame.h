@@ -138,6 +138,7 @@ public:
     void fade(int factor);
     CFrame *toAlphaGray(int mx = 0, int my = 0, int cx = -1, int cy = -1);
     void fill(unsigned int rgba);
+    void drawAt(CFrame &frame, int bx, int by, bool tr);
 
     // Implementation
 public:

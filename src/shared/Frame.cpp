@@ -1237,6 +1237,26 @@ void CFrame::fill(unsigned int rgba)
     }
 }
 
+void CFrame::drawAt(CFrame &frame, int bx, int by, bool tr)
+{
+    for (int y = 0; y < frame.m_nHei; ++y)
+    {
+        if (by + y >= m_nHei)
+        {
+            break;
+        }
+        for (int x = 0; x < frame.m_nLen; ++x)
+        {
+            if (bx + x >= m_nLen)
+            {
+                break;
+            }
+            if (!tr || frame.at(x, y))
+                at(bx + x, by + y) = frame.at(x, y);
+        }
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 // CSS3Map
 
