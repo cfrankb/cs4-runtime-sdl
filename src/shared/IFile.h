@@ -24,7 +24,7 @@
 class IFile
 {
 public:
-    virtual ~IFile(){};
+    virtual ~IFile() {};
 
     virtual IFile &operator>>(std::string &str) = 0;
     virtual IFile &operator<<(const std::string &str) = 0;

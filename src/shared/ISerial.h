@@ -23,7 +23,7 @@ class IFile;
 class ISerial
 {
 public:
-    virtual ~ISerial(){};
+    virtual ~ISerial() {};
     virtual bool read(IFile &file) = 0;
     virtual bool write(IFile &file) = 0;
 };

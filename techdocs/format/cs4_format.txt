@@ -1,6 +1,13 @@
 Old version (.cs4)
 
-Level grid is 64 x 64
+Level grid is 128 x 64
 First 8k are the tiles
 the next 8k are the attributes
 
+bits
+;0..1	Background objects
+;	    1- Water, 2- Lava, 3- Slime
+;2	    0- UP	1-DOWN
+;3..7	Type of idetifier drawn by the falowing values
+;	    1 	    Stop
+;	    2..31 	trigger key 0 to 29
