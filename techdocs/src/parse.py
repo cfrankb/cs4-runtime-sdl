@@ -105,10 +105,10 @@ def main():
         else:
             print(f'value no in section on line {line_num}')
 
-    with open('tilesdata.h', 'w') as tfile:
+    with open('../../src/tilesdata.h', 'w') as tfile:
         tfile.write('\n'.join(defines))
 
-    with open('tilesdata.cpp', 'w') as tfile:
+    with open('../../src/tilesdata.cpp', 'w') as tfile:
         data.append('};')
         tfile.write('\n'.join(data))
 

@@ -16,8 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef X__DOTARRAY__
-#define X__DOTARRAY__
+#pragma once
 
 #include <stdint.h>
 
@@ -65,5 +64,3 @@ protected:
         GROWBY = 1000
     };
 };
-
-#endif

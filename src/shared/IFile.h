@@ -16,8 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef IFILE_H
-#define IFILE_H
+#pragma once
 
 #include <string>
 
@@ -46,5 +45,3 @@ public:
     virtual void seek(long i) = 0;
     virtual long tell() = 0;
 };
-
-#endif // IFILE_H

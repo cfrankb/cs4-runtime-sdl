@@ -15,8 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __ISERIAL
-#define __ISERIAL
+#pragma once
 
 class IFile;
 
@@ -27,5 +26,3 @@ public:
     virtual bool read(IFile &file) = 0;
     virtual bool write(IFile &file) = 0;
 };
-
-#endif
