@@ -25,11 +25,11 @@ void CGame::setLevel(int level)
     m_level = level;
 }
 
-bool CGame::loadLevel()
+bool CGame::loadLevel(bool restart)
 {
     const auto levelCount = m_mapIndex.size();
     const int offset = m_mapIndex[m_level % levelCount];
-    FILE *sfile = fopen(DEFAULT_ARCH, "rb");
+    FILE *sfile = fopen(m_mapArch.c_str(), "rb");
     if (sfile == nullptr)
     {
         return false;
@@ -40,7 +40,6 @@ bool CGame::loadLevel()
         m_map.read(sfile);
         fclose(sfile);
     }
-
     return initLevel();
 }
 
@@ -51,14 +50,13 @@ bool CGame::loadLevelIndex()
 
 void CGame::init()
 {
-
     m_tiles = new CFrameSet();
     m_animz = new CFrameSet();
     preloadAssets();
 
     loadLevelIndex(); // get level index from archive
     m_level = 0;
-    loadLevel();
+    loadLevel(false);
 }
 
 void CGame::addActor(const CActor &actor)
@@ -68,6 +66,7 @@ void CGame::addActor(const CActor &actor)
 
 bool CGame::initLevel()
 {
+    m_goals = 0;
     m_actorCount = 0;
     bool playerFound = false;
 
@@ -83,6 +82,9 @@ bool CGame::initLevel()
                 m_player = CActor(x, y, tileID, CActor::Down);
                 m_map.at(x, y) = TILES_BLANK;
                 playerFound = true;
+                break;
+            case TILES_DIAMOND:
+                m_goals++;
                 break;
             case TILES_VAMPLANT:
                 addActor(CActor(x, y, tileID, CActor::Up));
@@ -244,4 +246,36 @@ void CGame::mainLoop()
 {
     CFrame frame(WIDTH, HEIGHT);
     drawScreen(frame);
+}
+
+void CGame::setMode(int mode)
+{
+    m_mode = mode;
+}
+
+int CGame::mode()
+{
+    return m_mode;
+}
+
+void CGame::nextLevel()
+{
+}
+
+void CGame::restartGame()
+{
+}
+
+bool CGame::setMapArch(const std::string &maparch)
+{
+    m_mapArch = maparch;
+    return CMapArch::indexFromFile(m_mapArch.c_str(), m_mapIndex);
+}
+
+void CGame::managePlayer(const uint8_t *joystate)
+{
+}
+
+void CGame::manageMonsters(const uint32_t ticks)
+{
 }

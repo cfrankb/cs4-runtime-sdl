@@ -8,10 +8,16 @@ BPATH=build
 BNAME=cs4-sdl
 TARGET=$(BPATH)/$(BNAME)
 TEMPLATE=
-DEPS=$(BPATH)/main$(EXT) $(BPATH)/maparch$(EXT) $(BPATH)/game$(EXT) $(BPATH)/tilesdata$(EXT) $(BPATH)/debug$(EXT) $(BPATH)/actor$(EXT) $(BPATH)/map$(EXT) $(BPATH)/FrameSet$(EXT) $(BPATH)/Frame$(EXT) $(BPATH)/DotArray$(EXT) $(BPATH)/helper$(EXT) $(BPATH)/PngMagic$(EXT) $(BPATH)/FileWrap$(EXT)
+DEPS=$(BPATH)/runtime$(EXT) $(BPATH)/gamemixin$(EXT) $(BPATH)/main$(EXT) $(BPATH)/maparch$(EXT) $(BPATH)/game$(EXT) $(BPATH)/tilesdata$(EXT) $(BPATH)/debug$(EXT) $(BPATH)/actor$(EXT) $(BPATH)/map$(EXT) $(BPATH)/FrameSet$(EXT) $(BPATH)/Frame$(EXT) $(BPATH)/DotArray$(EXT) $(BPATH)/helper$(EXT) $(BPATH)/PngMagic$(EXT) $(BPATH)/FileWrap$(EXT)
 EXT=.o
 
 all: $(TARGET)
+
+$(BPATH)/runtime$(EXT): src/runtime.cpp src/runtime.h
+	$(CXX) $(STD) $(CXXFLAGS) -c $< $(INC) -o $@
+
+$(BPATH)/gamemixin$(EXT): src/gamemixin.cpp src/gamemixin.h
+	$(CXX) $(STD) $(CXXFLAGS) -c $< $(INC) -o $@
 
 $(BPATH)/main$(EXT): src/main.cpp
 	$(CXX) $(STD) $(CXXFLAGS) -c $< $(INC) -o $@
