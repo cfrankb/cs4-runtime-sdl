@@ -8,7 +8,7 @@ BPATH=build
 BNAME=cs4-sdl
 TARGET=$(BPATH)/$(BNAME)
 TEMPLATE=
-DEPS=$(BPATH)/main$(EXT) $(BPATH)/maparch$(EXT) $(BPATH)/debug$(EXT) $(BPATH)/map$(EXT) $(BPATH)/FrameSet$(EXT) $(BPATH)/Frame$(EXT) $(BPATH)/DotArray$(EXT) $(BPATH)/helper$(EXT) $(BPATH)/PngMagic$(EXT) $(BPATH)/FileWrap$(EXT)
+DEPS=$(BPATH)/main$(EXT) $(BPATH)/maparch$(EXT) $(BPATH)/game$(EXT) $(BPATH)/tilesdata$(EXT) $(BPATH)/debug$(EXT) $(BPATH)/actor$(EXT) $(BPATH)/map$(EXT) $(BPATH)/FrameSet$(EXT) $(BPATH)/Frame$(EXT) $(BPATH)/DotArray$(EXT) $(BPATH)/helper$(EXT) $(BPATH)/PngMagic$(EXT) $(BPATH)/FileWrap$(EXT)
 EXT=.o
 
 all: $(TARGET)
@@ -19,7 +19,16 @@ $(BPATH)/main$(EXT): src/main.cpp
 $(BPATH)/maparch$(EXT): src/maparch.cpp src/maparch.h
 	$(CXX) $(STD) $(CXXFLAGS) -c $< $(INC) -o $@
 
+$(BPATH)/game$(EXT): src/game.cpp src/game.h
+	$(CXX) $(STD) $(CXXFLAGS) -c $< $(INC) -o $@
+
+$(BPATH)/tilesdata$(EXT): src/tilesdata.cpp src/tilesdata.h
+	$(CXX) $(STD) $(CXXFLAGS) -c $< $(INC) -o $@
+
 $(BPATH)/debug$(EXT): src/debug.cpp src/debug.h
+	$(CXX) $(STD) $(CXXFLAGS) -c $< $(INC) -o $@
+
+$(BPATH)/actor$(EXT): src/actor.cpp src/actor.h
 	$(CXX) $(STD) $(CXXFLAGS) -c $< $(INC) -o $@
 
 $(BPATH)/map$(EXT): src/map.cpp src/map.h

@@ -91,6 +91,11 @@ def main():
                            hp = int(pair[j])
                         elif pair[j][0] == '$':
                            score = int(pair[j][1:])
+                        elif pair[j][0] == ':':
+                            print("TODO: implement this")
+                            continue
+                        else:
+                            print(f'unknown param `${pair[j]}` on line ${line}')
                 if len(pair) > 2:
                     type_name = pair[2]
                     if type_name not in types:

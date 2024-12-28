@@ -57,7 +57,7 @@ typedef struct
 #define ANIMZ_WATER_UP2                  0x01 // &wateru2
 #define ANIMZ_WATER_DOWN                 0x02 // water2
 #define ANIMZ_LAVA_UP1                   0x03 // &lavaup1
-#define ANIMZ_LAVA_UP1                   0x04 // &lavaup2
+#define ANIMZ_LAVA_UP2                   0x04 // &lavaup2
 #define ANIMZ_LAVA_DOWN                  0x05 // lavadn
 #define ANIMZ_SLIME                      0x06 // slime
 #define ANIMZ_SLIME2                     0x07 // slime2
