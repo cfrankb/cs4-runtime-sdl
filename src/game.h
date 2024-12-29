@@ -14,14 +14,12 @@ class CMapArch;
 class CGame
 {
 public:
-    CGame();
     ~CGame();
 
+    static CGame *getGame();
     void setLevel(const int level);
     bool loadLevel(const bool restart);
     void init();
-    void drawScreen(CFrame &frame);
-    void mainLoop();
     void setMode(const int mode);
     int mode();
     inline uint8_t *keys()
@@ -41,75 +39,24 @@ public:
 
     void nextLevel();
     void restartGame();
-    bool read(FILE *)
-    {
-        return true;
-    }
-
-    bool write(FILE *)
-    {
-        return true;
-    }
-
-    void setLives(const int lives)
-    {
-        m_lives = lives;
-    }
-
-    int lives()
-    {
-        return m_lives;
-    }
-
-    int score()
-    {
-        return m_score;
-    }
-
-    int level()
-    {
-        return m_level;
-    }
-
-    int goals()
-    {
-        return m_goals;
-    }
-
-    int health()
-    {
-        return m_hp;
-    }
-
-    int playerSpeed()
-    {
-        return DEFAULT_PLAYER_SPEED;
-    }
-
+    bool read(FILE *);
+    bool write(FILE *);
+    void setLives(const int lives);
+    int lives();
+    int score();
+    int level();
+    int goals();
+    int health();
+    int playerSpeed();
     bool setMapArch(const std::string &maparch);
-
-    bool isPlayerDead()
-    {
-        return false;
-    }
-
-    bool isGameOver()
-    {
-        return false;
-    }
-
-    void killPlayer()
-    {
-        m_hp = 0;
-    }
-
-    int godModeTimer()
-    {
-        return 0;
-    }
-
+    bool isPlayerDead();
+    bool isGameOver();
+    void killPlayer();
+    int godModeTimer();
     void managePlayer(const uint8_t *joyState);
     void manageMonsters(const uint32_t ticks);
+    void getMonsters(CActor *&monsters, int &count);
+    CActor &getMonster(int i);
 
     enum GameMode
     {
@@ -123,15 +70,10 @@ public:
         MODE_HELP
     };
 
-    enum
-    {
-        KeyCount = 6
-    };
-
-protected:
 private:
-    bool loadLevelIndex();
+    CGame();
     bool initLevel();
+    bool move(const int aim);
 
     enum
     {
@@ -140,7 +82,10 @@ private:
         TILE_SIZE = 16,
         WIDTH = 320,
         HEIGHT = 240,
-        DEFAULT_PLAYER_SPEED = 3
+        DEFAULT_PLAYER_SPEED = 3,
+        DEFAULT_LIVES = 5,
+        DEFAULT_HP = 64,
+        KeyCount = 6
     };
 
     int m_mode;
@@ -155,10 +100,6 @@ private:
     int m_actorMax = MAX_ACTORS;
     int m_actorCount = 0;
     void addActor(const CActor &actor);
-    void preloadAssets();
-
-    CFrameSet *m_tiles;
-    CFrameSet *m_animz;
 
     IndexVector m_mapIndex;
     std::string m_mapArch;

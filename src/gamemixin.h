@@ -37,7 +37,7 @@ class CGameMixin
 public:
     explicit CGameMixin();
     virtual ~CGameMixin();
-    void init(const std::string &maparch, int index);
+    void init(const std::string &maparch, const int index);
     inline bool within(int val, int min, int max);
     void enableHiScore();
 
@@ -130,6 +130,15 @@ protected:
         INVALID = -1,
     };
 
+    enum
+    {
+        AIM_UP,
+        AIM_DOWN,
+        AIM_LEFT,
+        AIM_RIGHT,
+        ButtonCount
+    };
+
     uint8_t m_keyStates[Key_Count];
     uint8_t m_keyRepeters[Key_Count];
 
@@ -149,9 +158,9 @@ protected:
     };
 
     hiscore_t m_hiscores[MAX_SCORES];
-    uint8_t m_joyState[4];
+    uint8_t m_joyState[ButtonCount];
     uint32_t m_ticks = 0;
-    // CAnimator *m_animator;
+    CAnimator *m_animator = nullptr;
     CFrameSet *m_tiles = nullptr;
     CFrameSet *m_animz = nullptr;
     CFrameSet *m_annie = nullptr;

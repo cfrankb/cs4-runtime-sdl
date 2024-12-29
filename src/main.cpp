@@ -6,6 +6,7 @@
 
 #define FPS 24
 #define SLEEP 1000 / FPS
+#define DEFAULT_MAPARCH "data/levels.mapz-cs4"
 // #define TEST_SPEED
 
 #ifdef __EMSCRIPTEN__
@@ -80,16 +81,15 @@ int main(int argc, char *args[])
     CRuntime runtime;
     CMapArch maparch;
 
-    runtime.init("data/levels.mapz-cs4", 0);
-    runtime.enableHiScore();
-    runtime.enableMusic();
+    runtime.init(DEFAULT_MAPARCH, 0);
+    // runtime.enableHiScore();
+    //  runtime.enableMusic();
     runtime.SDLInit();
     runtime.preRun();
     runtime.paint();
 #ifdef __EMSCRIPTEN__
     g_runtime = &runtime;
     emscripten_set_main_loop_arg(loop_handler, &runtime, -1, 1);
-// emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 1000/FPS*1000);
 #else
     while (true)
     {

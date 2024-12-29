@@ -5,10 +5,14 @@
 #include "shared/FileWrap.h"
 
 const char DEFAULT_ARCH[] = "data/levels.mapz-cs4";
+CGame *g_gamePrivate = nullptr;
 
 CGame::CGame()
 {
-    init();
+    m_hp = DEFAULT_HP;
+    m_level = 0;
+    m_lives = DEFAULT_LIVES;
+    m_score = 0;
 }
 
 CGame::~CGame()
@@ -27,6 +31,9 @@ void CGame::setLevel(int level)
 
 bool CGame::loadLevel(bool restart)
 {
+    printf("loading level: %d ...\n", m_level + 1);
+    setMode(restart ? MODE_RESTART : MODE_INTRO);
+
     const auto levelCount = m_mapIndex.size();
     const int offset = m_mapIndex[m_level % levelCount];
     FILE *sfile = fopen(m_mapArch.c_str(), "rb");
@@ -43,20 +50,14 @@ bool CGame::loadLevel(bool restart)
     return initLevel();
 }
 
-bool CGame::loadLevelIndex()
-{
-    return CMapArch::indexFromFile(DEFAULT_ARCH, m_mapIndex);
-}
-
 void CGame::init()
 {
-    m_tiles = new CFrameSet();
-    m_animz = new CFrameSet();
-    preloadAssets();
-
-    loadLevelIndex(); // get level index from archive
-    m_level = 0;
-    loadLevel(false);
+    //  m_tiles = new CFrameSet();
+    //  m_animz = new CFrameSet();
+    // preloadAssets();
+    // loadLevelIndex(); // get level index from archive
+    // m_level = 0;
+    // loadLevel(false);
 }
 
 void CGame::addActor(const CActor &actor)
@@ -158,94 +159,10 @@ bool CGame::initLevel()
         }
     }
 
-    printf("player found :%d\n", playerFound ? "true" : "false");
+    printf("player found :%s\n", playerFound ? "true" : "false");
     printf("monsters: %d\n", m_actorCount);
 
     return playerFound;
-}
-
-void CGame::preloadAssets()
-{
-    struct obl5data_t
-    {
-        CFrameSet *frameSet;
-        const char *filename;
-    };
-
-    obl5data_t frameSets[] = {
-        {m_animz, "data/cs4animz.obl"},
-        {m_tiles, "data/cs4tiles.obl"},
-    };
-
-    enum
-    {
-        SET_COUNT = sizeof(frameSets) / sizeof(obl5data_t)
-    };
-
-    // read framesets
-    CFileWrap file;
-    for (int i = 0; i < SET_COUNT; ++i)
-    {
-        auto &set = frameSets[i];
-        if (!file.open(set.filename))
-        {
-            printf("failed to open %s\n", set.filename);
-        }
-        set.frameSet->read(file);
-        file.close();
-    }
-}
-
-void CGame::drawScreen(CFrame &frame)
-{
-
-    frame.fill(0xff000000);
-
-    enum
-    {
-        FLAG_UP_DOWN = 4,
-        UP_OFFSET = 0,
-        DOWN_OFFSET = 2,
-        FILTER_ENV = 3, // WATER, LAVA, SLIME
-        ENV_FRAMES = 3,
-        FILTER_ATTR = 0xf8 // STOP 00 01 02 etc
-    };
-
-    const auto mapLen = WIDTH / TILE_SIZE;
-    const auto mapHei = HEIGHT / TILE_SIZE;
-
-    CFrameSet &tiles = *m_tiles;
-    CFrameSet &animz = *m_animz;
-
-    for (int y = 0; y < mapHei; ++y)
-    {
-        for (int x = 0; x < mapLen; ++x)
-        {
-            const auto &tileID = m_map.at(x, y);
-            const auto &attr = m_map.getAttr(x, y);
-            if (attr & 0x80)
-            {
-                // printf("%s (%d %d) %.2x\n", tmp, x, y, attr);
-            }
-            if (attr & FILTER_ENV)
-            {
-                auto bframe = ENV_FRAMES * ((attr & FILTER_ENV) - 1) + ((attr & FLAG_UP_DOWN) ? DOWN_OFFSET : UP_OFFSET);
-                frame.drawAt(*(animz[bframe]), x * TILE_SIZE, y * TILE_SIZE, true);
-            }
-            frame.drawAt(*(tiles[tileID]), x * TILE_SIZE, y * TILE_SIZE, true);
-            if (attr & FILTER_ATTR)
-            {
-                auto num = (attr >> 3) & 0x1f;
-                //  frame.drawAt(*(g_frameSets[SET_NUM].frameSet[num]), x * TILE_SIZE, y * TILE_SIZE, true);
-            }
-        }
-    }
-}
-
-void CGame::mainLoop()
-{
-    CFrame frame(WIDTH, HEIGHT);
-    drawScreen(frame);
 }
 
 void CGame::setMode(int mode)
@@ -264,6 +181,10 @@ void CGame::nextLevel()
 
 void CGame::restartGame()
 {
+    m_hp = DEFAULT_HP;
+    m_level = 0;
+    m_lives = DEFAULT_LIVES;
+    m_score = 0;
 }
 
 bool CGame::setMapArch(const std::string &maparch)
@@ -272,10 +193,125 @@ bool CGame::setMapArch(const std::string &maparch)
     return CMapArch::indexFromFile(m_mapArch.c_str(), m_mapIndex);
 }
 
+bool CGame::move(const int aim)
+{
+    if (m_player.canMove(aim))
+    {
+        m_player.move(aim);
+        //   consume();
+        return true;
+    }
+
+    return false;
+}
+
 void CGame::managePlayer(const uint8_t *joystate)
 {
+    // m_godModeTimer = std::max(m_godModeTimer - 1, 0);
+    // m_extraSpeedTimer = std::max(m_extraSpeedTimer - 1, 0);
+    //    auto const pu = m_player.getPU();
+    //  if (pu == TILES_SWAMP)
+    {
+        // apply health damage
+        //  const TileDef &def = getTileDef(pu);
+        // addHealth(def.health);
+    }
+    uint8_t aims[] = {CActor::Up, CActor::Down, CActor::Left, CActor::Right};
+    for (uint8_t i = 0; i < 4; ++i)
+    {
+        uint8_t aim = aims[i];
+        if (joystate[aim] && move(aim))
+        {
+            break;
+        }
+    }
 }
 
 void CGame::manageMonsters(const uint32_t ticks)
 {
+}
+
+CGame *CGame::getGame()
+{
+    if (g_gamePrivate == nullptr)
+    {
+        g_gamePrivate = new CGame();
+    }
+    return g_gamePrivate;
+}
+
+bool CGame::read(FILE *)
+{
+    return true;
+}
+
+bool CGame::write(FILE *)
+{
+    return true;
+}
+
+void CGame::setLives(const int lives)
+{
+    m_lives = lives;
+}
+
+int CGame::lives()
+{
+    return m_lives;
+}
+
+int CGame::score()
+{
+    return m_score;
+}
+
+int CGame::level()
+{
+    return m_level;
+}
+
+int CGame::goals()
+{
+    return m_goals;
+}
+
+int CGame::health()
+{
+    return m_hp;
+}
+
+int CGame::playerSpeed()
+{
+    return DEFAULT_PLAYER_SPEED;
+}
+
+bool CGame::isPlayerDead()
+{
+    return false;
+}
+
+bool CGame::isGameOver()
+{
+    return false;
+}
+
+void CGame::killPlayer()
+{
+    m_hp = 0;
+}
+
+int CGame::godModeTimer()
+{
+    return 0;
+}
+
+void CGame::getMonsters(CActor *&monsters, int &count)
+{
+    monsters = m_actors;
+    count = m_actorCount;
+}
+
+CActor &CGame::getMonster(int i)
+{
+    return m_actors[i];
 }

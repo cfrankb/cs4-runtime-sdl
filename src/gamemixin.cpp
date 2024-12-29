@@ -18,13 +18,12 @@
 #include <cstring>
 #include "gamemixin.h"
 #include "tilesdata.h"
-// #include "animzdata.h"
 #include "shared/FrameSet.h"
 #include "shared/Frame.h"
 #include "map.h"
 #include "game.h"
 #include "maparch.h"
-// #include "animator.h"
+#include "animator.h"
 
 // Check windows
 #ifdef _WIN64
@@ -46,19 +45,19 @@
 
 CGameMixin::CGameMixin()
 {
-    m_game = new CGame();
-    // m_animator = new CAnimator();
+    m_game = CGame::getGame();
+    m_animator = new CAnimator();
     m_prompt = PROMPT_NONE;
     clearJoyStates();
-    clearScores();
+    // clearScores();
     clearKeyStates();
 }
 
 CGameMixin::~CGameMixin()
 {
-    // if (m_animator)
+    if (m_animator)
     {
-        //  delete m_animator;
+        delete m_animator;
     }
 
     if (m_game)
@@ -253,6 +252,16 @@ void CGameMixin::drawKeys(CFrame &bitmap)
 
 void CGameMixin::drawScreen(CFrame &bitmap)
 {
+    enum
+    {
+        FLAG_UP_DOWN = 4,
+        UP_OFFSET = 0,
+        DOWN_OFFSET = 2,
+        FILTER_ENV = 3, // WATER, LAVA, SLIME
+        ENV_FRAMES = 3,
+        FILTER_ATTR = 0xf8 // STOP 00 01 02 etc
+    };
+
     CMap *map = &m_game->map();
     CGame &game = *m_game;
 
@@ -270,61 +279,56 @@ void CGameMixin::drawScreen(CFrame &bitmap)
     CFrameSet &animz = *m_animz;
     CFrameSet &annie = *m_annie;
     bitmap.fill(BLACK);
+
+    uint8_t offset = m_animator->offset() & 1;
     for (int y = 0; y < rows; ++y)
     {
         for (int x = 0; x < cols; ++x)
         {
-            uint8_t tileID = map->at(x + mx, y + my);
-            CFrame *tile;
-            /*
-            if (tileID == TILES_STOP || tileID == TILES_BLANK || m_animator->isSpecialCase(tileID))
+            const uint8_t tileID = map->at(x + mx, y + my);
+            const auto &attr = map->getAttr(x, y);
+            if (attr & FILTER_ENV)
             {
-                // skip blank tiles and special cases
+                // draw background
+                auto bframe = ENV_FRAMES * ((attr & FILTER_ENV) - 1) +
+                              ((attr & FLAG_UP_DOWN) ? DOWN_OFFSET : UP_OFFSET) +
+                              offset;
+                bitmap.drawAt(*(animz[bframe]), x * TILE_SIZE, y * TILE_SIZE, false);
+            }
+            if (tileID == TILES_STOP || tileID == TILES_BLANK)
+            {
+                // skip blank tiles
                 continue;
             }
-            else if (tileID == TILES_ANNIE2)
-            {
-                tile = annie[game.player().getAim() * 8 + m_playerFrameOffset];
-            }
-            else
-            {
-                int j = m_animator->at(tileID);
-                if (j == NO_ANIMZ)
-                {
-                    tile = tiles[tileID];
-                }
-                else
-                {
-                    tile = animz[j];
-                }
-            }
-            drawTile(bitmap, x * TILE_SIZE, y * TILE_SIZE, *tile, false);
-            */
+            // draw tile
+            bitmap.drawAt(*(tiles[tileID]), x * TILE_SIZE, y * TILE_SIZE, true);
         }
     }
 
-    // const int offset = m_animator->offset() & 7;
+    // draw player
+    const CActor &player = game.player();
+    CFrame *tile = annie[player.aim() * 8 + m_playerFrameOffset];
+    drawTile(bitmap,
+             (player.x() - mx) * TILE_SIZE,
+             (player.y() - my) * TILE_SIZE, *tile,
+             true);
+
+    // draw monsters
     CActor *monsters;
     int count;
-    /*
     game.getMonsters(monsters, count);
     for (int i = 0; i < count; ++i)
     {
         const CActor &monster = monsters[i];
         if (monster.within(mx, my, mx + cols, my + rows))
         {
-            const uint8_t tileID = map->at(monster.getX(), monster.getY());
-            if (!m_animator->isSpecialCase(tileID))
-            {
-                continue;
-            }
-            // special case animations
-            const uint8_t x = monster.x() - mx;
+            // animations
+            const int x = monster.x() - mx;
             const int y = monster.y() - my;
-            CFrame *tile = animz[monster.getAim() * 8 + ANIMZ_INSECT1 + offset];
-            drawTile(bitmap, x * TILE_SIZE, y * TILE_SIZE, *tile, false);
+            CFrame *tile = animz[m_animator->at(monster.type())];
+            drawTile(bitmap, x * TILE_SIZE, y * TILE_SIZE, *tile, true);
         }
-    }*/
+    }
 
     // draw game status
     char tmp[32];
@@ -530,7 +534,7 @@ void CGameMixin::manageGamePlay()
             m_playerFrameOffset = 0;
         }
         m_healthRef = game.health();
-        // m_animator->animate();
+        m_animator->animate();
     }
 
     game.manageMonsters(m_ticks);
@@ -588,21 +592,20 @@ void CGameMixin::startCountdown(int f)
     m_countdown = f * INTRO_DELAY;
 }
 
-void CGameMixin::init(const std::string &maparch, int index)
+void CGameMixin::init(const std::string &maparch, const int index)
 {
     if (!m_assetPreloaded)
     {
         preloadAssets();
         m_assetPreloaded = true;
     }
-    // m_maparch = maparch;
-    if (m_game->setMapArch(maparch))
+    if (!m_game->setMapArch(maparch))
     {
         printf("failed to extract index from maparch: %s\n", maparch.c_str());
         return;
     }
     m_game->setLevel(index);
-    sanityTest();
+    // sanityTest();
     m_countdown = INTRO_DELAY;
     m_game->loadLevel(false);
 }

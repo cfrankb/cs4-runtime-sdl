@@ -70,20 +70,15 @@ typedef struct
 #define ANIMZ_RFISH                      0x0e // rfish
 #define ANIMZ_LFISH                      0x0f // lfish
 #define ANIMZ_DUMMY                      0x10 // $1dummy
-#define ANIMZ_GOBBLIN                    0x11 // $1gobbli
-#define ANIMZ_TEDDY                      0x12 // $1teddy
-#define ANIMZ_OCTOPUS                    0x13 // $1octop
-#define ANIMZ_UNUSED1                    0x14 // chglnk0
-#define ANIMZ_UNUSED2                    0x15 // x
-#define ANIMZ_UNUSED3                    0x16 // x
-#define ANIMZ_DUMMY2                     0x17 // $1dummy
-#define ANIMZ_GOBBLIN2                   0x18 // $1gobbli
-#define ANIMZ_TEDDY2                     0x19 // $1teddy
-#define ANIMZ_OCTOPUS2                   0x1a // $1octop
-#define ANIMZ_UNUSED4                    0x1b // chglnk0
-#define ANIMZ_UNUSED5                    0x1c // x
-#define ANIMZ_UNUSED6                    0x1d // x
-#define ANIMZ_TOTO                       0x1e
+#define ANIMZ_DUMMY2                     0x11 // $1dummy
+#define ANIMZ_GOBBLIN                    0x12 // $1gobbli
+#define ANIMZ_GOBBLIN2                   0x13 // $2gobbli
+#define ANIMZ_TEDDY                      0x14 // $1teddy
+#define ANIMZ_TEDDY2                     0x15 // $2teddy
+#define ANIMZ_OCTOPUS                    0x16 // $1octop
+#define ANIMZ_OCTOPUS2                   0x17 // $2octop
+#define ANIMZ_UNUSED1                    0x18 // chglnk0
+#define ANIMZ_UNUSED2                    0x19 // chglnk1
 
 // tiles
 #define TILES_BLANK                      0x00 // Blank

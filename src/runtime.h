@@ -57,12 +57,4 @@ protected:
     ISound *m_sound = nullptr;
     bool m_musicEnabled = false;
     App m_app;
-
-    enum
-    {
-        AIM_UP,
-        AIM_DOWN,
-        AIM_LEFT,
-        AIM_RIGHT
-    };
 };

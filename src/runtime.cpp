@@ -58,7 +58,7 @@ CRuntime::~CRuntime()
 
     if (m_music)
     {
-        delete m_music;
+        //   delete m_music;
     }
 }
 
@@ -103,7 +103,7 @@ bool CRuntime::SDLInit()
     else
     {
         m_app.window = SDL_CreateWindow(
-            "CS3v2 Runtime",
+            "CS4 Runtime",
             SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 2 * WIDTH, 2 * HEIGHT, windowFlags);
         if (m_app.window == NULL)
         {
@@ -220,8 +220,8 @@ void CRuntime::preloadAssets()
     };
 
     asset_t assets[]{
-        {"data/tiles.obl", &m_tiles},
-        {"data/animz.obl", &m_animz},
+        {"data/cs4tiles.obl", &m_tiles},
+        {"data/cs4animz.obl", &m_animz},
         {"data/annie.obl", &m_annie},
     };
 
