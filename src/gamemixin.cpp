@@ -259,7 +259,6 @@ void CGameMixin::drawScreen(CFrame &bitmap)
         DOWN_OFFSET = 2,
         FILTER_ENV = 3, // WATER, LAVA, SLIME
         ENV_FRAMES = 3,
-        FILTER_ATTR = 0xf8 // STOP 00 01 02 etc
     };
 
     CMap *map = &m_game->map();
@@ -290,9 +289,9 @@ void CGameMixin::drawScreen(CFrame &bitmap)
             if (attr & FILTER_ENV)
             {
                 // draw background
-                auto bframe = ENV_FRAMES * ((attr & FILTER_ENV) - 1) +
+                auto tileID = ENV_FRAMES * ((attr & FILTER_ENV) - 1) +
                               ((attr & FLAG_UP_DOWN) ? DOWN_OFFSET : UP_OFFSET + offset);
-                bitmap.drawAt(*(animz[bframe]), x * TILE_SIZE, y * TILE_SIZE, false);
+                bitmap.drawAt(*(animz[tileID]), x * TILE_SIZE, y * TILE_SIZE, false);
             }
             if (tileID == TILES_STOP || tileID == TILES_BLANK)
             {
@@ -324,7 +323,7 @@ void CGameMixin::drawScreen(CFrame &bitmap)
             // animations
             const int x = monster.x() - mx;
             const int y = monster.y() - my;
-            CFrame *tile = animz[m_animator->at(monster.type())];
+            CFrame *tile = animz[m_animator->at(monster.tileID())];
             drawTile(bitmap, x * TILE_SIZE, y * TILE_SIZE, *tile, true);
         }
     }

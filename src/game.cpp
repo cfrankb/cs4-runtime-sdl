@@ -6,7 +6,6 @@
 
 const char DEFAULT_ARCH[] = "data/levels.mapz-cs4";
 CGame *g_gamePrivate = nullptr;
-CMap g_map;
 
 CGame::CGame()
 {
@@ -43,14 +42,17 @@ bool CGame::loadLevel(bool restart)
     FILE *sfile = fopen(m_mapArch.c_str(), "rb");
     if (sfile == nullptr)
     {
+        printf("couldn't open %s\n", m_mapArch.c_str());
         return false;
     }
     else if (sfile)
     {
         fseek(sfile, offset, SEEK_SET);
-        g_map.read(sfile);
+        m_map.read(sfile);
         fclose(sfile);
     }
+    m_hp = DEFAULT_HP;
+    m_oxygen = DEFAULT_OXYGEN;
     return initLevel();
 }
 
@@ -75,89 +77,89 @@ bool CGame::initLevel()
     m_actorCount = 0;
     bool playerFound = false;
 
-    for (int y = 0; y < g_map.hei(); ++y)
+    for (int y = 0; y < m_map.hei(); ++y)
     {
-        for (int x = 0; x < g_map.len(); ++x)
+        for (int x = 0; x < m_map.len(); ++x)
         {
-            const auto &tileID = g_map.at(x, y);
-            const auto &attr = g_map.getAttr(x, y);
+            const auto &tileID = m_map.at(x, y);
+            const auto &attr = m_map.getAttr(x, y);
             switch (tileID)
             {
             case TILES_PLAYER:
-                m_player = CActor(x, y, tileID, CActor::Down);
-                g_map.at(x, y) = TILES_BLANK;
+                m_player = CActor(x, y, TYPE_PLAYER, tileID, CActor::Down);
+                m_map.at(x, y) = TILES_BLANK;
                 playerFound = true;
                 break;
             case TILES_DIAMOND:
                 m_goals++;
                 break;
             case TILES_VAMPLANT:
-                addActor(CActor(x, y, tileID, CActor::Up));
-                g_map.at(x, y) = TILES_BLANK;
+                addActor(CActor(x, y, TYPE_VAMPLANT, tileID, CActor::Up));
+                m_map.at(x, y) = TILES_BLANK;
                 break;
             case TILES_FISH:
-                addActor(CActor(x, y, tileID, CActor::Left));
-                g_map.at(x, y) = TILES_BLANK;
+                addActor(CActor(x, y, TYPE_DRONE, tileID, CActor::Left));
+                m_map.at(x, y) = TILES_BLANK;
                 break;
             case TILES_CHANGE_LINK:
-                addActor(CActor(x, y, tileID, CActor::Left));
-                g_map.at(x, y) = TILES_BLANK;
+                addActor(CActor(x, y, TYPE_MONSTER, tileID, CActor::Left));
+                m_map.at(x, y) = TILES_BLANK;
                 break;
             case TILES_PLATFORM_UP_DN:
-                addActor(CActor(x, y, tileID, CActor::Up));
-                g_map.at(x, y) = TILES_BLANK;
+                addActor(CActor(x, y, TYPE_PLATFORM, tileID, CActor::Up));
+                m_map.at(x, y) = TILES_BLANK;
                 break;
             case TILES_PLATFORM_LF_RG:
-                addActor(CActor(x, y, tileID, CActor::Left));
-                g_map.at(x, y) = TILES_BLANK;
+                addActor(CActor(x, y, TYPE_PLATFORM, tileID, CActor::Left));
+                m_map.at(x, y) = TILES_BLANK;
                 break;
             case TILES_DUMMY:
-                addActor(CActor(x, y, TILES_DUMMY, CActor::Left));
-                g_map.at(x, y) = TILES_BLANK;
+                addActor(CActor(x, y, TYPE_MONSTER, TILES_DUMMY, CActor::Left));
+                m_map.at(x, y) = TILES_BLANK;
                 break;
             case TILES_DUMMY_ON_BRIDGE:
-                addActor(CActor(x, y, TILES_DUMMY, CActor::Left));
-                g_map.at(x, y) = TILES_BRIDGE_0;
+                addActor(CActor(x, y, TYPE_MONSTER, TILES_DUMMY, CActor::Left));
+                m_map.at(x, y) = TILES_BRIDGE_0;
                 break;
             case TILES_DUMMY_ON_LADDER:
-                addActor(CActor(x, y, TILES_DUMMY, CActor::Left));
-                g_map.at(x, y) = TILES_LADDER;
+                addActor(CActor(x, y, TYPE_MONSTER, TILES_DUMMY, CActor::Left));
+                m_map.at(x, y) = TILES_LADDER;
                 break;
             case TILES_GOBBLIN:
-                addActor(CActor(x, y, TILES_GOBBLIN, CActor::Left));
-                g_map.at(x, y) = TILES_BLANK;
+                addActor(CActor(x, y, TYPE_MONSTER, TILES_GOBBLIN, CActor::Left));
+                m_map.at(x, y) = TILES_BLANK;
                 break;
             case TILES_GOBBLIN_ON_BRIDGE:
-                addActor(CActor(x, y, TILES_GOBBLIN, CActor::Left));
-                g_map.at(x, y) = TILES_BRIDGE_0;
+                addActor(CActor(x, y, TYPE_MONSTER, TILES_GOBBLIN, CActor::Left));
+                m_map.at(x, y) = TILES_BRIDGE_0;
                 break;
             case TILES_GOBBLIN_ON_LADDER:
-                addActor(CActor(x, y, TILES_GOBBLIN, CActor::Left));
-                g_map.at(x, y) = TILES_LADDER;
+                addActor(CActor(x, y, TYPE_MONSTER, TILES_GOBBLIN, CActor::Left));
+                m_map.at(x, y) = TILES_LADDER;
                 break;
             case TILES_TEDDY:
-                addActor(CActor(x, y, TILES_TEDDY, CActor::Left));
-                g_map.at(x, y) = TILES_BLANK;
+                addActor(CActor(x, y, TYPE_MONSTER, TILES_TEDDY, CActor::Left));
+                m_map.at(x, y) = TILES_BLANK;
                 break;
             case TILES_TEDDY_ON_BRIDGE:
-                addActor(CActor(x, y, TILES_TEDDY, CActor::Left));
-                g_map.at(x, y) = TILES_BRIDGE_0;
+                addActor(CActor(x, y, TYPE_MONSTER, TILES_TEDDY, CActor::Left));
+                m_map.at(x, y) = TILES_BRIDGE_0;
                 break;
             case TILES_TEDDY_ON_LADDER:
-                addActor(CActor(x, y, TILES_TEDDY, CActor::Left));
-                g_map.at(x, y) = TILES_LADDER;
+                addActor(CActor(x, y, TYPE_MONSTER, TILES_TEDDY, CActor::Left));
+                m_map.at(x, y) = TILES_LADDER;
                 break;
             case TILES_OCTOPUS:
-                addActor(CActor(x, y, TILES_OCTOPUS, CActor::Left));
-                g_map.at(x, y) = TILES_BLANK;
+                addActor(CActor(x, y, TYPE_MONSTER, TILES_OCTOPUS, CActor::Left));
+                m_map.at(x, y) = TILES_BLANK;
                 break;
             case TILES_OCTOPUS_ON_BRIDGE:
-                addActor(CActor(x, y, TILES_OCTOPUS, CActor::Left));
-                g_map.at(x, y) = TILES_BRIDGE_0;
+                addActor(CActor(x, y, TYPE_MONSTER, TILES_OCTOPUS, CActor::Left));
+                m_map.at(x, y) = TILES_BRIDGE_0;
                 break;
             case TILES_OCTOPUS_ON_LADDER:
-                addActor(CActor(x, y, TILES_OCTOPUS, CActor::Left));
-                g_map.at(x, y) = TILES_LADDER;
+                addActor(CActor(x, y, TYPE_MONSTER, TILES_OCTOPUS, CActor::Left));
+                m_map.at(x, y) = TILES_LADDER;
                 break;
             }
         }
@@ -181,6 +183,15 @@ int CGame::mode()
 
 void CGame::nextLevel()
 {
+    addPoints(LEVEL_BONUS + m_hp);
+    if (m_level != m_mapIndex.size() - 1)
+    {
+        ++m_level;
+    }
+    else
+    {
+        m_level = 0;
+    }
 }
 
 void CGame::restartGame()
@@ -204,8 +215,8 @@ bool CGame::move(const int aim)
 {
     if (m_player.canMove(aim))
     {
-        consume();
         m_player.move(aim);
+        consume();
         return true;
     }
 
@@ -217,12 +228,18 @@ void CGame::managePlayer(const uint8_t *joystate)
     // m_godModeTimer = std::max(m_godModeTimer - 1, 0);
     // m_extraSpeedTimer = std::max(m_extraSpeedTimer - 1, 0);
     //    auto const pu = m_player.getPU();
-    //  if (pu == TILES_SWAMP)
+    auto const pu = m_map.at(m_player.x(), m_player.y());
+    auto const env = m_map.getAttr(m_player.x(), m_player.y()) & FILTER_HAZARD;
+
+    if (env == ENV_WATER)
     {
-        // apply health damage
-        //  const TileDef &def = getTileDef(pu);
-        // addHealth(def.health);
     }
+    else if (env == ENV_SLIME || env == ENV_LAVA)
+    {
+        m_hp = 0;
+        return;
+    }
+
     uint8_t aims[] = {CActor::Up, CActor::Down, CActor::Left, CActor::Right};
     for (uint8_t i = 0; i < 4; ++i)
     {
@@ -294,17 +311,17 @@ int CGame::playerSpeed()
 
 bool CGame::isPlayerDead()
 {
-    return false;
+    return m_hp == 0;
 }
 
 bool CGame::isGameOver()
 {
-    return false;
+    return m_lives == 0;
 }
 
 void CGame::killPlayer()
 {
-    m_hp = 0;
+    m_lives = m_lives ? m_lives - 1 : 0;
 }
 
 int CGame::godModeTimer()
@@ -325,21 +342,19 @@ CActor &CGame::getMonster(int i)
 
 void CGame::consume()
 {
-    const uint8_t pu = g_map.at(m_player.x(), m_player.y());
+    const uint8_t pu = m_map.at(m_player.x(), m_player.y());
     const tiledef_t &def = getTileDef(pu);
     if (def.type == TYPE_PICKUP)
     {
         addPoints(def.score);
-        g_map.at(m_player.x(), m_player.y()) = TILES_BLANK;
-        //  m_player.setPU(TILES_BLANK);
+        m_map.at(m_player.x(), m_player.y()) = TILES_BLANK;
         addHealth(def.health);
         // playTileSound(pu);
     }
     else if (def.type == TYPE_KEY)
     {
         addPoints(def.score);
-        g_map.at(m_player.x(), m_player.y()) = TILES_BLANK;
-        //      m_player.setPU(TILES_BLANK);
+        m_map.at(m_player.x(), m_player.y()) = TILES_BLANK;
         addKey(pu);
         addHealth(def.health);
         //        playSound(SOUND_KEY);
@@ -347,8 +362,7 @@ void CGame::consume()
     else if (def.type == TYPE_DIAMOND)
     {
         addPoints(def.score);
-        g_map.at(m_player.x(), m_player.y()) = TILES_BLANK;
-        //    m_player.setPU(TILES_BLANK);
+        m_map.at(m_player.x(), m_player.y()) = TILES_BLANK;
         --m_goals;
         addHealth(def.health);
         //  playTileSound(pu);
@@ -356,6 +370,11 @@ void CGame::consume()
     else if (def.type == TYPE_SWAMP)
     {
         addHealth(def.health);
+    }
+    else if (def.type == TYPE_SWITCH)
+    {
+        // do no consume switch
+        return;
     }
 
     // apply flags
@@ -377,11 +396,13 @@ void CGame::consume()
     // trigger key
     const int x = m_player.x();
     const int y = m_player.y();
-    const uint8_t attr = g_map.getAttr(x, y) & FILTER_ATTR;
+    const uint8_t attr = m_map.getAttr(x, y) & FILTER_ATTR;
+    if (attr)
+        printf("attr : %.2x\n", attr);
     if (attr != 0 && attr != ATTR_STOP)
     {
-        const uint8_t env = g_map.getAttr(x, y) & FILTER_ENV;
-        g_map.setAttr(x, y, env);
+        const uint8_t env = m_map.getAttr(x, y) & FILTER_ENV;
+        m_map.setAttr(x, y, env);
         if (clearAttr(attr))
         {
             //    playSound(SOUND_0009);
@@ -406,7 +427,7 @@ void CGame::addLife()
 
 CMap &CGame::map()
 {
-    return g_map;
+    return m_map;
 }
 
 void CGame::addHealth(int hp)
@@ -440,25 +461,71 @@ void CGame::addKey(uint8_t c)
 int CGame::clearAttr(const uint8_t attr)
 {
     int count = 0;
-    for (int y = 0; y < g_map.hei(); ++y)
+    for (int y = 0; y < m_map.hei(); ++y)
     {
-        for (int x = 0; x < g_map.len(); ++x)
+        for (int x = 0; x < m_map.len(); ++x)
         {
-            const uint8_t tileAttr = g_map.getAttr(x, y) & FILTER_ATTR;
+            const uint8_t tileAttr = m_map.getAttr(x, y) & FILTER_ATTR;
             if (tileAttr == attr)
             {
                 ++count;
-                const uint8_t tile = g_map.at(x, y);
+                const uint8_t tile = m_map.at(x, y);
                 const auto &def = getTileDef(tile);
                 if (def.type == TYPE_DIAMOND)
                 {
                     --m_goals;
                 }
-                const uint8_t tileEnv = g_map.getAttr(x, y) & FILTER_ENV;
-                g_map.set(x, y, TILES_BLANK);
-                g_map.setAttr(x, y, tileEnv);
+                const uint8_t tileEnv = m_map.getAttr(x, y) & FILTER_ENV;
+                m_map.set(x, y, TILES_BLANK);
+                m_map.setAttr(x, y, tileEnv);
             }
         }
     }
     return count;
+}
+
+bool CGame::hasKey(uint8_t c)
+{
+    for (uint32_t i = 0; i < sizeof(m_keys); ++i)
+    {
+        if (m_keys[i] == c)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+Pos CGame::translate(const Pos &p, int aim)
+{
+    Pos t = p;
+
+    switch (aim)
+    {
+    case CActor::Up:
+        if (t.y > 0)
+        {
+            --t.y;
+        }
+        break;
+    case CActor::Down:
+        if (t.y < m_map.hei() - 1)
+        {
+            ++t.y;
+        }
+        break;
+    case CActor::Left:
+        if (t.x > 0)
+        {
+            --t.x;
+        }
+        break;
+    case CActor::Right:
+        if (t.x < m_map.len() - 1)
+        {
+            ++t.x;
+        }
+    }
+
+    return t;
 }

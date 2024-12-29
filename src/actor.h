@@ -5,7 +5,7 @@
 class CActor
 {
 public:
-    CActor(const uint8_t x = 0, const uint8_t y = 0, const uint8_t type = 0, const uint8_t aim = 0);
+    CActor(const uint8_t x = 0, const uint8_t y = 0, const uint8_t type = 0, const uint8_t tileID = 0, const uint8_t aim = 0);
     ~CActor();
     uint8_t x() const;
     void setX(const uint8_t _x);
@@ -13,6 +13,7 @@ public:
     void setY(const uint8_t _y);
     uint8_t aim() const;
     uint8_t type() const;
+    uint8_t tileID() const;
     void setAim(const uint8_t _aim);
     bool canMove(const int aim);
     void move(const int aim);
@@ -31,8 +32,9 @@ public:
     };
 
 protected:
-    uint8_t m_x;
-    uint8_t m_y;
-    uint8_t m_type;
-    uint8_t m_aim;
+    uint8_t m_x;      // x
+    uint8_t m_y;      // y
+    uint8_t m_type;   // actor type
+    uint8_t m_tileID; // tile associated
+    uint8_t m_aim;    // aim
 };

@@ -26,6 +26,7 @@ public:
     {
         return m_keys;
     };
+    bool hasKey(uint8_t c);
 
     inline CActor &player()
     {
@@ -53,6 +54,7 @@ public:
     void manageMonsters(const uint32_t ticks);
     void getMonsters(CActor *&monsters, int &count);
     CActor &getMonster(int i);
+    Pos translate(const Pos &p, int aim);
 
     enum GameMode
     {
@@ -87,15 +89,22 @@ private:
         DEFAULT_PLAYER_SPEED = 3,
         DEFAULT_LIVES = 5,
         DEFAULT_HP = 64,
-        KeyCount = 6,
+        DEFAULT_OXYGEN = 32,
         SCORE_LIFE = 5000,
+        MAX_OXYGEN = 128,
+        MAX_KEYS = 6,
         MAX_LIVES = 99,
         MAX_HEALTH = 128,
         GODMODE_TIMER = 100,
         EXTRASPEED_TIMER = 100,
-        FILTER_ATTR = 0xf8, // STOP 00 01 02 etc
-        FILTER_ENV = 0x07,  // Water, Lava, Slime
-        ATTR_STOP = 4,
+        FILTER_ATTR = 0xf8,   // STOP 00 01 02 etc
+        FILTER_ENV = 0x07,    // Water, Lava, Slime
+        FILTER_HAZARD = 0x03, // Water, Lava, Slime
+        ENV_WATER = 1,
+        ENV_LAVA = 2,
+        ENV_SLIME = 3,
+        ATTR_STOP = 0x08,
+        LEVEL_BONUS = 500
     };
 
     int m_mode;
@@ -104,6 +113,7 @@ private:
     int m_score;
     int m_goals;
     int m_hp;
+    int m_oxygen;
     int m_nextLife;
     int m_godModeTimer;
     int m_extraSpeedTimer;
@@ -112,8 +122,9 @@ private:
     int m_actorMax = MAX_ACTORS;
     int m_actorCount = 0;
     void addActor(const CActor &actor);
+    CMap m_map;
 
     IndexVector m_mapIndex;
     std::string m_mapArch;
-    uint8_t m_keys[KeyCount];
+    uint8_t m_keys[MAX_KEYS];
 };

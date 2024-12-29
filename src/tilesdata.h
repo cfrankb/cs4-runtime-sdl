@@ -181,3 +181,4 @@ const tiledef_t & getTileDef(int i);
 #define TILES_OCTOPUS                    0x59 // Octopus
 #define TILES_OCTOPUS_ON_BRIDGE          0x5a // Octopus on bridge
 #define TILES_OCTOPUS_ON_LADDER          0x5b // Octopus on ladder
+#define TILES_MAX                        0x5c
