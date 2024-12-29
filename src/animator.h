@@ -31,7 +31,7 @@ public:
     struct animzSeq_t
     {
         const uint8_t tileID;
-        const uint8_t animz;
+        const uint8_t animzID;
         const uint8_t count;
     };
 

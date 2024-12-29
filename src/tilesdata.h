@@ -15,6 +15,14 @@ typedef struct
     const char * basename;
 } tiledef_t;
 
+const tiledef_t & getTileDef(int i);
+
+
+// flag
+#define FLAG_GODMODE                     0x01
+#define FLAG_EXTRA_LIFE                  0x02
+#define FLAG_EXTRA_SPEED                 0x04
+
 // ai
 #define AI_STICKY                        0x01
 #define AI_ROUND                         0x02
@@ -77,8 +85,8 @@ typedef struct
 #define ANIMZ_TEDDY2                     0x15 // $2teddy
 #define ANIMZ_OCTOPUS                    0x16 // $1octop
 #define ANIMZ_OCTOPUS2                   0x17 // $2octop
-#define ANIMZ_UNUSED1                    0x18 // chglnk0
-#define ANIMZ_UNUSED2                    0x19 // chglnk1
+#define ANIMZ_CHGLNK                     0x18 // chglnk0
+#define ANIMZ_CHGLNK2                    0x19 // chglnk1
 
 // tiles
 #define TILES_BLANK                      0x00 // Blank

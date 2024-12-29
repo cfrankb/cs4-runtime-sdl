@@ -80,8 +80,8 @@ int main(int argc, char *args[])
 {
     CRuntime runtime;
     CMapArch maparch;
-
-    runtime.init(DEFAULT_MAPARCH, 0);
+    int startLevel = argc > 1 ? atoi(args[1]) : 0;
+    runtime.init(DEFAULT_MAPARCH, startLevel);
     // runtime.enableHiScore();
     //  runtime.enableMusic();
     runtime.SDLInit();

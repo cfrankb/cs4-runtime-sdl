@@ -286,13 +286,12 @@ void CGameMixin::drawScreen(CFrame &bitmap)
         for (int x = 0; x < cols; ++x)
         {
             const uint8_t tileID = map->at(x + mx, y + my);
-            const auto &attr = map->getAttr(x, y);
+            const auto &attr = map->getAttr(x + mx, y + my);
             if (attr & FILTER_ENV)
             {
                 // draw background
                 auto bframe = ENV_FRAMES * ((attr & FILTER_ENV) - 1) +
-                              ((attr & FLAG_UP_DOWN) ? DOWN_OFFSET : UP_OFFSET) +
-                              offset;
+                              ((attr & FLAG_UP_DOWN) ? DOWN_OFFSET : UP_OFFSET + offset);
                 bitmap.drawAt(*(animz[bframe]), x * TILE_SIZE, y * TILE_SIZE, false);
             }
             if (tileID == TILES_STOP || tileID == TILES_BLANK)
@@ -301,7 +300,7 @@ void CGameMixin::drawScreen(CFrame &bitmap)
                 continue;
             }
             // draw tile
-            bitmap.drawAt(*(tiles[tileID]), x * TILE_SIZE, y * TILE_SIZE, true);
+            bitmap.drawAt(*(tiles[tileID]), x * TILE_SIZE, y * TILE_SIZE, attr & FILTER_ENV);
         }
     }
 

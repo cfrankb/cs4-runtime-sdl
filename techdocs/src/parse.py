@@ -27,7 +27,11 @@ def main():
     uint8_t ai;
     bool hidden;
     const char * basename;
-} tiledef_t;\n''')
+} tiledef_t;
+
+const tiledef_t & getTileDef(int i);
+
+''')
 
     data = [
         '//////////////////////////////////////////////////',
@@ -35,7 +39,7 @@ def main():
         '',
         '#include "tilesdata.h"',
         '',
-        'const tiledef_t tiledef[] = {'
+        'const tiledef_t tileDefs[] = {'
     ]
 
     types = {}
@@ -115,6 +119,12 @@ def main():
 
     with open('../../src/tilesdata.cpp', 'w') as tfile:
         data.append('};')
+        data.append('''
+const tiledef_t &getTileDef(int i)
+{
+    return tileDefs[i];
+}
+''')
         tfile.write('\n'.join(data))
 
 main()

@@ -3,14 +3,14 @@
 
 #include "tilesdata.h"
 
-const tiledef_t tiledef[] = {
+const tiledef_t tileDefs[] = {
      {0x00, TYPE_BACKGROUND, 0, 0, 0, 0, false, "Blank"},                   // 00 TILES_BLANK
      {0x00, TYPE_WALLS, 0, 0, 0, 0, false, "Brick"},                        // 01 TILES_BRICK
      {0x00, TYPE_PLAYER, 0, 0, 0, 0, false, "Player"},                      // 02 TILES_PLAYER
      {0x00, TYPE_PICKUP, 20, 0, 0, 0, false, "Light Bulb"},                 // 03 TILES_LIGHT_BULB
      {0x00, TYPE_PICKUP, 67, 10, 0, 0, false, "Orb"},                       // 04 TILES_ORB
      {0x00, TYPE_PICKUP, 50, 0, 0, 0, false, "Chest"},                      // 05 TILES_CHEST
-     {0x00, TYPE_PICKUP, 10, 3, 0, 0, false, "Diamond"},                    // 06 TILES_DIAMOND
+     {0x00, TYPE_DIAMOND, 10, 3, 0, 0, false, "Diamond"},                   // 06 TILES_DIAMOND
      {0x00, TYPE_PICKUP, 15, 8, 0, 0, false, "Neckless"},                   // 07 TILES_NECKLESS
      {0x00, TYPE_PICKUP, 20, 0, 0, 0, false, "Rope"},                       // 08 TILES_ROPE
      {0x00, TYPE_PICKUP, 66, 0, 0, 0, false, "Tnt"},                        // 09 TILES_TNT
@@ -97,3 +97,8 @@ const tiledef_t tiledef[] = {
      {0x00, TYPE_MONSTER, 0, 0, 0, 0, false, "Octopus on bridge"},          // 5a TILES_OCTOPUS_ON_BRIDGE
      {0x00, TYPE_MONSTER, 0, 0, 0, 0, false, "Octopus on ladder"},          // 5b TILES_OCTOPUS_ON_LADDER
 };
+
+const tiledef_t &getTileDef(int i)
+{
+    return tileDefs[i];
+}

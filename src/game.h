@@ -27,16 +27,12 @@ public:
         return m_keys;
     };
 
-    inline CMap &map()
-    {
-        return m_map;
-    }
-
     inline CActor &player()
     {
         return m_player;
     }
 
+    CMap &map();
     void nextLevel();
     void restartGame();
     bool read(FILE *);
@@ -74,6 +70,12 @@ private:
     CGame();
     bool initLevel();
     bool move(const int aim);
+    void consume();
+    void addPoints(const int points);
+    void addLife();
+    void addHealth(int hp);
+    void addKey(uint8_t c);
+    int clearAttr(const uint8_t attr);
 
     enum
     {
@@ -85,7 +87,15 @@ private:
         DEFAULT_PLAYER_SPEED = 3,
         DEFAULT_LIVES = 5,
         DEFAULT_HP = 64,
-        KeyCount = 6
+        KeyCount = 6,
+        SCORE_LIFE = 5000,
+        MAX_LIVES = 99,
+        MAX_HEALTH = 128,
+        GODMODE_TIMER = 100,
+        EXTRASPEED_TIMER = 100,
+        FILTER_ATTR = 0xf8, // STOP 00 01 02 etc
+        FILTER_ENV = 0x07,  // Water, Lava, Slime
+        ATTR_STOP = 4,
     };
 
     int m_mode;
@@ -94,7 +104,9 @@ private:
     int m_score;
     int m_goals;
     int m_hp;
-    CMap m_map;
+    int m_nextLife;
+    int m_godModeTimer;
+    int m_extraSpeedTimer;
     CActor *m_actors = new CActor[MAX_ACTORS];
     CActor m_player;
     int m_actorMax = MAX_ACTORS;

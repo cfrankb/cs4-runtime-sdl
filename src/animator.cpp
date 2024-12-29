@@ -18,6 +18,7 @@
 #include "animator.h"
 #include "tilesdata.h"
 #include <cstring>
+#include <cstdio>
 
 const CAnimator::animzSeq_t animzTileSeq[] = {
     {
@@ -45,7 +46,26 @@ const CAnimator::animzSeq_t animzTileSeq[] = {
         ANIMZ_VAMPLANT,
         2,
     },
-};
+    {
+        TILES_CHANGE_LINK,
+        ANIMZ_CHGLNK,
+        2,
+    },
+    {
+        TILES_PLATFORM_UP_DN,
+        ANIMZ_PLATFORM,
+        1,
+    },
+    {
+        TILES_PLATFORM_LF_RG,
+        ANIMZ_PLATFORM,
+        1,
+    },
+    {
+        TILES_FISH,
+        ANIMZ_LFISH,
+        1,
+    }};
 
 CAnimator::CAnimator()
 {
@@ -62,12 +82,16 @@ void CAnimator::animate()
 
 uint8_t CAnimator::at(uint8_t tileID)
 {
-    constexpr size_t seqCount = sizeof(animzTileSeq) / sizeof(decltype(animzTileSeq));
+    constexpr size_t seqCount = sizeof(animzTileSeq) / sizeof(decltype(animzTileSeq[0]));
     for (size_t i = 0; i < seqCount; ++i)
     {
-        const auto seq = animzTileSeq[i];
-        return seq.animz + (m_offset & (seq.count - 1));
+        const auto &seq = animzTileSeq[i];
+        if (seq.tileID == tileID)
+        {
+            return seq.animzID + (m_offset & (seq.count - 1));
+        }
     }
+    printf("unhandled tileID: %.2x\n", tileID);
     return 0;
 }
 
