@@ -65,7 +65,28 @@ const CAnimator::animzSeq_t animzTileSeq[] = {
         TILES_FISH,
         ANIMZ_LFISH,
         1,
-    }};
+    },
+    {
+        TILES_DIAMOND,
+        ANIMZ_DIAMOND,
+        12,
+    },
+    {
+        TILES_FORCE_FIELD,
+        ANIMZ_FFIELD,
+        8,
+    },
+    {
+        TILES_TRIFORCE,
+        ANIMZ_TRIFORCE,
+        4,
+    },
+    {
+        TILES_ORB,
+        ANIMZ_ORB,
+        4,
+    },
+};
 
 CAnimator::CAnimator()
 {
@@ -88,7 +109,7 @@ uint8_t CAnimator::at(uint8_t tileID)
         const auto &seq = animzTileSeq[i];
         if (seq.tileID == tileID)
         {
-            return seq.animzID + (m_offset & (seq.count - 1));
+            return seq.animzID + (m_offset % seq.count);
         }
     }
     printf("unhandled tileID: %.2x\n", tileID);

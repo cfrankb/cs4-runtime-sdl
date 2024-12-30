@@ -108,6 +108,7 @@ private:
         LEVEL_BONUS = 500,
         OXYGEN_BONUS = 16,
         Z_KEY = 4,
+        KILL_KEY = 5,
     };
 
     int m_mode;

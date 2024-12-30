@@ -87,6 +87,35 @@ const tiledef_t & getTileDef(int i);
 #define ANIMZ_OCTOPUS2                   0x17 // $2octop
 #define ANIMZ_CHGLNK                     0x18 // chglnk0
 #define ANIMZ_CHGLNK2                    0x19 // chglnk1
+#define ANIMZ_FFIELD                     0x1a
+#define ANIMZ_FFIELD2                    0x1b
+#define ANIMZ_FFIELD3                    0x1c
+#define ANIMZ_FFIELD4                    0x1d
+#define ANIMZ_FFIELD5                    0x1e
+#define ANIMZ_FFIELD6                    0x1f
+#define ANIMZ_FFIELD7                    0x20
+#define ANIMZ_FFIELD8                    0x21
+#define ANIMZ_DIAMOND                    0x22
+#define ANIMZ_DIAMOND2                   0x23
+#define ANIMZ_DIAMOND3                   0x24
+#define ANIMZ_DIAMOND4                   0x25
+#define ANIMZ_DIAMOND5                   0x26
+#define ANIMZ_DIAMOND6                   0x27
+#define ANIMZ_DIAMOND7                   0x28
+#define ANIMZ_DIAMOND8                   0x29
+#define ANIMZ_DIAMOND9                   0x2a
+#define ANIMZ_DIAMOND10                  0x2b
+#define ANIMZ_DIAMOND11                  0x2c
+#define ANIMZ_DIAMOND12                  0x2d
+#define ANIMZ_DIAMOND13                  0x2e
+#define ANIMZ_ORB                        0x2f
+#define ANIMZ_ORB2                       0x30
+#define ANIMZ_ORB3                       0x31
+#define ANIMZ_ORB4                       0x32
+#define ANIMZ_TRIFORCE                   0x33
+#define ANIMZ_TRIFORCE2                  0x34
+#define ANIMZ_TRIFORCE3                  0x35
+#define ANIMZ_TRIFORCE4                  0x36
 
 // tiles
 #define TILES_BLANK                      0x00 // Blank

@@ -136,6 +136,7 @@ protected:
         AIM_LEFT,
         AIM_RIGHT,
         Z_KEY,
+        KILL_KEY,
         ButtonCount
     };
 
@@ -210,4 +211,3 @@ protected:
     virtual void startMusic();
     virtual void setZoom(bool zoom);
 };
-

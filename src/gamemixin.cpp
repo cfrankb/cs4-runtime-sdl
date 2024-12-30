@@ -300,7 +300,20 @@ void CGameMixin::drawScreen(CFrame &bitmap)
                 continue;
             }
             // draw tile
-            bitmap.drawAt(*(tiles[tileID]), x * TILE_SIZE, y * TILE_SIZE, attr & FILTER_ENV);
+            CFrame *tile = nullptr;
+            if (tileID == TILES_DIAMOND ||
+                tileID == TILES_FORCE_FIELD ||
+                tileID == TILES_TRIFORCE ||
+                tileID == TILES_ORB)
+            {
+                tile = animz[m_animator->at(tileID)];
+            }
+            else
+            {
+                tile = tiles[tileID];
+            }
+
+            bitmap.drawAt(*tile, x * TILE_SIZE, y * TILE_SIZE, attr & FILTER_ENV);
         }
     }
 

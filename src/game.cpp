@@ -290,6 +290,11 @@ void CGame::managePlayer(const uint8_t *joystate)
             flipHiddenFlag(attr);
         }
     }
+
+    if (joystate[KILL_KEY])
+    {
+        killPlayer();
+    }
 }
 
 void CGame::manageMonsters(const uint32_t ticks)
@@ -377,6 +382,7 @@ bool CGame::isGameOver()
 
 void CGame::killPlayer()
 {
+    m_hp = 0;
     m_lives = m_lives ? m_lives - 1 : 0;
 }
 
