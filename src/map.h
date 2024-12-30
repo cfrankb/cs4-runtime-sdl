@@ -63,6 +63,10 @@ public:
     {
         return m_map;
     }
+    const AttrMap &attrs()
+    {
+        return m_attrs;
+    }
 
     enum : uint16_t
     {
@@ -76,6 +80,9 @@ public:
     void shift(int aim);
     void debug();
 
+    static uint16_t toKey(const uint8_t x, const uint8_t y);
+    static Pos toPos(const uint16_t key);
+
 protected:
     uint16_t m_len;
     uint16_t m_hei;
@@ -84,5 +91,4 @@ protected:
     AttrMap m_attrs;
     std::string m_lastError;
     std::string m_title;
-    static uint16_t toKey(const uint8_t x, const uint8_t y);
 };

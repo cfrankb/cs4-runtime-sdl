@@ -28,10 +28,17 @@ public:
         Down,
         Left,
         Right,
-        AimCount
+        Fall = 0xff
     };
 
 protected:
+    enum
+    {
+        FILTER_ATTR = 0x78, // STOP 00 01 02 etc
+        FLAG_HIDDEN = 0x80, // hide tile from engine
+        ATTR_STOP = 0x08,   // stop monsters
+    };
+
     uint8_t m_x;      // x
     uint8_t m_y;      // y
     uint8_t m_type;   // actor type

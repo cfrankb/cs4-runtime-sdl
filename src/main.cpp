@@ -85,7 +85,7 @@ int main(int argc, char *args[])
     // runtime.enableHiScore();
     //  runtime.enableMusic();
     runtime.SDLInit();
-    runtime.preRun();
+    // runtime.preRun();
     runtime.paint();
 #ifdef __EMSCRIPTEN__
     g_runtime = &runtime;

@@ -22,12 +22,8 @@ public:
     void init();
     void setMode(const int mode);
     int mode();
-    inline uint8_t *keys()
-    {
-        return m_keys;
-    };
+    uint8_t *keys();
     bool hasKey(uint8_t c);
-
     inline CActor &player()
     {
         return m_player;
@@ -44,6 +40,9 @@ public:
     int level();
     int goals();
     int health();
+    int oxygen();
+    int ropes();
+    int bulbs();
     int playerSpeed();
     bool setMapArch(const std::string &maparch);
     bool isPlayerDead();
@@ -75,11 +74,12 @@ private:
     void consume();
     void addPoints(const int points);
     void addLife();
-    void addHealth(int hp);
-    void addKey(uint8_t c);
-    int clearAttr(const uint8_t attr);
+    void addHealth(const int hp);
+    void addOxygen(const int oxygen);
+    void addKey(const uint8_t c);
+    int flipHiddenFlag(const uint8_t attr);
 
-    enum
+    enum : int
     {
         MAX_ACTORS = 64,
         GROW_BY = 8,
@@ -97,14 +97,17 @@ private:
         MAX_HEALTH = 128,
         GODMODE_TIMER = 100,
         EXTRASPEED_TIMER = 100,
-        FILTER_ATTR = 0xf8,   // STOP 00 01 02 etc
+        FILTER_ATTR = 0x78,   // STOP 00 01 02 etc
         FILTER_ENV = 0x07,    // Water, Lava, Slime
         FILTER_HAZARD = 0x03, // Water, Lava, Slime
-        ENV_WATER = 1,
-        ENV_LAVA = 2,
-        ENV_SLIME = 3,
-        ATTR_STOP = 0x08,
-        LEVEL_BONUS = 500
+        FLAG_HIDDEN = 0x80,   // hide tile from engine
+        ENV_WATER = 1,        // water
+        ENV_LAVA = 2,         // lava
+        ENV_SLIME = 3,        // slime
+        ATTR_STOP = 0x08,     // stop monsters
+        LEVEL_BONUS = 500,
+        OXYGEN_BONUS = 16,
+        Z_KEY = 4,
     };
 
     int m_mode;
@@ -113,6 +116,8 @@ private:
     int m_score;
     int m_goals;
     int m_hp;
+    int m_ropes;
+    int m_bulbs;
     int m_oxygen;
     int m_nextLife;
     int m_godModeTimer;

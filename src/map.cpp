@@ -542,6 +542,12 @@ uint16_t CMap::toKey(const uint8_t x, const uint8_t y)
     return x + (y << 8);
 }
 
+Pos CMap::toPos(const uint16_t key)
+{
+    return Pos{static_cast<uint8_t>(key),
+               static_cast<uint8_t>(key >> 8)};
+}
+
 void CMap::debug()
 {
     printf("len: %d hei:%d\n", m_len, m_hei);

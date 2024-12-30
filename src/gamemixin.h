@@ -15,8 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef CGAMEMIXIN_H
-#define CGAMEMIXIN_H
+#pragma once
 
 #ifdef USE_QFILE
 #include <QTimer>
@@ -136,6 +135,7 @@ protected:
         AIM_DOWN,
         AIM_LEFT,
         AIM_RIGHT,
+        Z_KEY,
         ButtonCount
     };
 
@@ -211,4 +211,3 @@ protected:
     virtual void setZoom(bool zoom);
 };
 
-#endif // CGAMEMIXIN_H

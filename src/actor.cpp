@@ -64,12 +64,30 @@ bool CActor::canMove(const int aim)
     const Pos &newPos = game.translate(pos, aim);
     if (pos.x == newPos.x && pos.y == newPos.y)
     {
+        // invalid position outside of map
         return false;
     }
 
-    uint8_t c = map.at(newPos.x, newPos.y);
+    const uint8_t c = map.at(newPos.x, newPos.y);
     const auto &def = getTileDef(c);
-    if (def.type == TYPE_BACKGROUND)
+    const uint8_t rawData = map.getAttr(newPos.x, newPos.y);
+    const uint8_t attr = rawData & FILTER_ATTR;
+    if (rawData & FLAG_HIDDEN)
+    {
+        // ignore hidden tiles
+        return true;
+    }
+    else if ((m_type != TYPE_PLAYER) &&
+             (aim != Fall) && (attr == ATTR_STOP))
+    {
+        return false;
+    }
+    else if (def.type == TYPE_BACKGROUND ||
+             def.type == TYPE_LADDER ||
+             def.type == TYPE_BRIDGE ||
+             def.type == TYPE_ROOT ||
+             def.type == TYPE_SPECIAL ||
+             def.type == TYPE_TRAP)
     {
         return true;
     }
@@ -79,10 +97,10 @@ bool CActor::canMove(const int aim)
             def.type == TYPE_PICKUP ||
             def.type == TYPE_DIAMOND ||
             def.type == TYPE_STOP ||
-            def.type == TYPE_LADDER ||
             def.type == TYPE_SWITCH ||
-            def.type == TYPE_BRIDGE ||
-            def.type == TYPE_KEY)
+            def.type == TYPE_KEY ||
+            def.type == TYPE_TRANS_SOURCE ||
+            def.type == TYPE_TRANS_DEST)
         {
             return true;
         }
@@ -92,7 +110,9 @@ bool CActor::canMove(const int aim)
         }
         else if (c >= TILES_MAX)
         {
+            // TODO: Revisit later
             printf("undefined tile=%.2x type=%.2x\n", c, def.type);
+            return true;
         }
     }
     return false;

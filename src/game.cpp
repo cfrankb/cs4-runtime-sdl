@@ -1,4 +1,5 @@
 #include "game.h"
+#include <cstring>
 #include "tilesdata.h"
 #include "shared/Frame.h"
 #include "shared/FrameSet.h"
@@ -6,6 +7,7 @@
 
 const char DEFAULT_ARCH[] = "data/levels.mapz-cs4";
 CGame *g_gamePrivate = nullptr;
+#define _same(_t, _v) static_cast<decltype(_t)>(_v)
 
 CGame::CGame()
 {
@@ -16,6 +18,7 @@ CGame::CGame()
     m_nextLife = SCORE_LIFE;
     m_extraSpeedTimer = 0;
     m_godModeTimer = 0;
+    m_ropes = 0;
 }
 
 CGame::~CGame()
@@ -53,6 +56,9 @@ bool CGame::loadLevel(bool restart)
     }
     m_hp = DEFAULT_HP;
     m_oxygen = DEFAULT_OXYGEN;
+    m_ropes = 0;
+    m_bulbs = 0;
+    memset(m_keys, 0, sizeof(m_keys));
     return initLevel();
 }
 
@@ -225,19 +231,36 @@ bool CGame::move(const int aim)
 
 void CGame::managePlayer(const uint8_t *joystate)
 {
-    // m_godModeTimer = std::max(m_godModeTimer - 1, 0);
-    // m_extraSpeedTimer = std::max(m_extraSpeedTimer - 1, 0);
-    //    auto const pu = m_player.getPU();
-    auto const pu = m_map.at(m_player.x(), m_player.y());
-    auto const env = m_map.getAttr(m_player.x(), m_player.y()) & FILTER_HAZARD;
+    m_godModeTimer = std::max(m_godModeTimer - 1, 0);
+    m_extraSpeedTimer = std::max(m_extraSpeedTimer - 1, 0);
+    const auto x = m_player.x();
+    const auto y = m_player.y();
+    auto const pu = m_map.at(x, y);
+    auto const rawAttr = m_map.getAttr(x, y);
+    auto const env = rawAttr & FILTER_HAZARD;
 
     if (env == ENV_WATER)
     {
+        // suffocate
+        if (m_oxygen)
+        {
+            --m_oxygen;
+        }
+        else if (m_hp)
+        {
+            --m_hp;
+        }
     }
     else if (env == ENV_SLIME || env == ENV_LAVA)
     {
+        // instant death
         m_hp = 0;
         return;
+    }
+    else
+    {
+        // restore oxygen
+        m_oxygen = std::max(m_oxygen, _same(m_oxygen, DEFAULT_OXYGEN));
     }
 
     uint8_t aims[] = {CActor::Up, CActor::Down, CActor::Left, CActor::Right};
@@ -247,6 +270,24 @@ void CGame::managePlayer(const uint8_t *joystate)
         if (joystate[aim] && move(aim))
         {
             break;
+        }
+    }
+
+    const tiledef_t &def = getTileDef(pu);
+    const auto attr = rawAttr & FILTER_ATTR;
+    if (joystate[Z_KEY] && def.type == TYPE_SWITCH)
+    {
+        if (pu == TILES_SWITCH_UP)
+        {
+            m_map.set(x, y, TILES_SWITCH_DOWN);
+        }
+        else
+        {
+            m_map.set(x, y, TILES_SWITCH_UP);
+        }
+        if (attr)
+        {
+            flipHiddenFlag(attr);
         }
     }
 }
@@ -304,6 +345,21 @@ int CGame::health()
     return m_hp;
 }
 
+int CGame::oxygen()
+{
+    return m_oxygen;
+}
+
+int CGame::ropes()
+{
+    return m_ropes;
+}
+
+int CGame::bulbs()
+{
+    return m_bulbs;
+}
+
 int CGame::playerSpeed()
 {
     return DEFAULT_PLAYER_SPEED;
@@ -342,13 +398,33 @@ CActor &CGame::getMonster(int i)
 
 void CGame::consume()
 {
-    const uint8_t pu = m_map.at(m_player.x(), m_player.y());
+    const int x = m_player.x();
+    const int y = m_player.y();
+    const uint8_t pu = m_map.at(x, y);
+    const uint8_t rawData = m_map.getAttr(x, y);
     const tiledef_t &def = getTileDef(pu);
-    if (def.type == TYPE_PICKUP)
+    if (rawData & FLAG_HIDDEN)
+    {
+        // hidden tiles cannot be consumed
+        return;
+    }
+    else if (def.type == TYPE_PICKUP)
     {
         addPoints(def.score);
         m_map.at(m_player.x(), m_player.y()) = TILES_BLANK;
         addHealth(def.health);
+        if (pu == TILES_OXYGEN_BOTTLE)
+        {
+            m_oxygen = std::min(m_oxygen + OXYGEN_BONUS, _same(m_oxygen, MAX_OXYGEN));
+        }
+        else if (pu == TILES_ROPE)
+        {
+            ++m_ropes;
+        }
+        else if (pu == TILES_LIGHT_BULB)
+        {
+            ++m_bulbs;
+        }
         // playTileSound(pu);
     }
     else if (def.type == TYPE_KEY)
@@ -371,9 +447,11 @@ void CGame::consume()
     {
         addHealth(def.health);
     }
-    else if (def.type == TYPE_SWITCH)
+    else if (def.type == TYPE_BACKGROUND ||
+             def.type == TYPE_TRANS_DEST ||
+             def.type == TYPE_TRANS_SOURCE)
     {
-        // do no consume switch
+        // do no consume blank or transporter
         return;
     }
 
@@ -394,18 +472,19 @@ void CGame::consume()
     }
 
     // trigger key
-    const int x = m_player.x();
-    const int y = m_player.y();
-    const uint8_t attr = m_map.getAttr(x, y) & FILTER_ATTR;
+    const uint8_t attr = rawData & FILTER_ATTR;
     if (attr)
         printf("attr : %.2x\n", attr);
     if (attr != 0 && attr != ATTR_STOP)
     {
-        const uint8_t env = m_map.getAttr(x, y) & FILTER_ENV;
-        m_map.setAttr(x, y, env);
-        if (clearAttr(attr))
+        if (def.type != TYPE_SWITCH)
         {
-            //    playSound(SOUND_0009);
+            const uint8_t env = m_map.getAttr(x, y) & FILTER_ENV;
+            m_map.setAttr(x, y, env);
+            if (flipHiddenFlag(attr))
+            {
+                //    playSound(SOUND_0009);
+            }
         }
     }
 }
@@ -430,7 +509,12 @@ CMap &CGame::map()
     return m_map;
 }
 
-void CGame::addHealth(int hp)
+uint8_t *CGame::keys()
+{
+    return m_keys;
+};
+
+void CGame::addHealth(const int hp)
 {
     if (hp > 0)
     {
@@ -442,7 +526,12 @@ void CGame::addHealth(int hp)
     }
 }
 
-void CGame::addKey(uint8_t c)
+void CGame::addOxygen(const int oxygen)
+{
+    m_oxygen = std::max(m_oxygen + oxygen, _same(m_oxygen, MAX_OXYGEN));
+}
+
+void CGame::addKey(const uint8_t c)
 {
     for (uint32_t i = 0; i < sizeof(m_keys); ++i)
     {
@@ -458,27 +547,29 @@ void CGame::addKey(uint8_t c)
     }
 }
 
-int CGame::clearAttr(const uint8_t attr)
+int CGame::flipHiddenFlag(const uint8_t attr)
 {
+    printf("flipHiddenFlag %.2x\n", attr);
     int count = 0;
-    for (int y = 0; y < m_map.hei(); ++y)
+    for (const auto &[key, rawData] : m_map.attrs())
     {
-        for (int x = 0; x < m_map.len(); ++x)
+        const uint8_t tileAttr = rawData & FILTER_ATTR;
+        if (tileAttr == attr)
         {
-            const uint8_t tileAttr = m_map.getAttr(x, y) & FILTER_ATTR;
-            if (tileAttr == attr)
+            const Pos pos = CMap::toPos(key);
+            const uint8_t tile = m_map.at(pos.x, pos.y);
+            const auto &def = getTileDef(tile);
+            printf("-->found at x: %d y: %d type:%.2x attr %.2x\n",
+                   pos.x, pos.y, def.type, rawData);
+            if (def.type == TYPE_SWITCH ||
+                def.type == TYPE_TRANS_DEST ||
+                def.type == TYPE_TRANS_SOURCE ||
+                def.type == TYPE_DIAMOND)
             {
-                ++count;
-                const uint8_t tile = m_map.at(x, y);
-                const auto &def = getTileDef(tile);
-                if (def.type == TYPE_DIAMOND)
-                {
-                    --m_goals;
-                }
-                const uint8_t tileEnv = m_map.getAttr(x, y) & FILTER_ENV;
-                m_map.set(x, y, TILES_BLANK);
-                m_map.setAttr(x, y, tileEnv);
+                continue;
             }
+            ++count;
+            m_map.setAttr(pos.x, pos.y, rawData ^ FLAG_HIDDEN);
         }
     }
     return count;
@@ -526,6 +617,5 @@ Pos CGame::translate(const Pos &p, int aim)
             ++t.x;
         }
     }
-
     return t;
 }

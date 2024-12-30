@@ -257,8 +257,9 @@ void CGameMixin::drawScreen(CFrame &bitmap)
         FLAG_UP_DOWN = 4,
         UP_OFFSET = 0,
         DOWN_OFFSET = 2,
-        FILTER_ENV = 3, // WATER, LAVA, SLIME
-        ENV_FRAMES = 3,
+        FILTER_ENV = 3,    // WATER, LAVA, SLIME
+        ENV_FRAMES = 3,    // frames per env element
+        FLAG_HIDDEN = 0x80 // hidden tiles
     };
 
     CMap *map = &m_game->map();
@@ -293,9 +294,9 @@ void CGameMixin::drawScreen(CFrame &bitmap)
                               ((attr & FLAG_UP_DOWN) ? DOWN_OFFSET : UP_OFFSET + offset);
                 bitmap.drawAt(*(animz[tileID]), x * TILE_SIZE, y * TILE_SIZE, false);
             }
-            if (tileID == TILES_STOP || tileID == TILES_BLANK)
+            if (tileID == TILES_STOP || tileID == TILES_BLANK || (attr & FLAG_HIDDEN))
             {
-                // skip blank tiles
+                // skip blank tiles and hidden tiles
                 continue;
             }
             // draw tile
@@ -371,7 +372,10 @@ void CGameMixin::drawScreen(CFrame &bitmap)
         tx = sprintf(tmp, "DIAMONDS %.2d ", game.goals());
         drawFont(bitmap, bx * FONT_SIZE, Y_STATUS, tmp, YELLOW);
         bx += tx;
-        sprintf(tmp, "LIVES %.2d ", game.lives());
+        tx = sprintf(tmp, "ROPES %.2d ", game.ropes());
+        drawFont(bitmap, bx * FONT_SIZE, Y_STATUS, tmp, LIGHTGRAY);
+        bx += tx;
+        tx = sprintf(tmp, "LIVES %.2d ", game.lives());
         drawFont(bitmap, bx * FONT_SIZE, Y_STATUS, tmp, PURPLE);
     }
 
@@ -380,9 +384,15 @@ void CGameMixin::drawScreen(CFrame &bitmap)
     drawRect(bitmap, Rect{0, bitmap.hei() - 16, WIDTH, TILE_SIZE}, LIGHTGRAY, false);
 
     // draw health bar
-    drawRect(bitmap, Rect{4, bitmap.hei() - 12, std::min(game.health() / 2, bitmap.len() - 4), 8},
+    drawRect(bitmap, Rect{4, bitmap.hei() - 12, std::min(game.health() / 2, bitmap.len() - 4), 4},
              game.godModeTimer() ? WHITE : LIME, true);
-    drawRect(bitmap, Rect{4, bitmap.hei() - 12, std::min(game.health() / 2, bitmap.len() - 4), 8},
+    drawRect(bitmap, Rect{4, bitmap.hei() - 12, std::min(game.health() / 2, bitmap.len() - 4), 4},
+             WHITE, false);
+
+    // draw oxygen bar
+    drawRect(bitmap, Rect{4, bitmap.hei() - 7, std::min(game.oxygen() / 2, bitmap.len() - 4), 4},
+             WHITE, true);
+    drawRect(bitmap, Rect{4, bitmap.hei() - 7, std::min(game.oxygen() / 2, bitmap.len() - 4), 4},
              WHITE, false);
 
     // draw keys
@@ -515,6 +525,7 @@ void CGameMixin::manageGamePlay()
     if (m_ticks % game.playerSpeed() == 0 && !game.isPlayerDead())
     {
         game.managePlayer(m_joyState);
+        m_joyState[Z_KEY] = 0;
     }
 
     if (m_ticks % 3 == 0)
@@ -597,6 +608,7 @@ void CGameMixin::init(const std::string &maparch, const int index)
         preloadAssets();
         m_assetPreloaded = true;
     }
+
     if (!m_game->setMapArch(maparch))
     {
         printf("failed to extract index from maparch: %s\n", maparch.c_str());

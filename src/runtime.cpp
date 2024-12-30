@@ -103,7 +103,7 @@ bool CRuntime::SDLInit()
     else
     {
         m_app.window = SDL_CreateWindow(
-            "CS4 Runtime",
+            "CS4v2 Runtime",
             SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 2 * WIDTH, 2 * HEIGHT, windowFlags);
         if (m_app.window == NULL)
         {
@@ -169,6 +169,9 @@ void CRuntime::doInput()
                 continue;
             case SDLK_RIGHT:
                 m_joyState[AIM_RIGHT] = keyState;
+                continue;
+            case SDLK_z:
+                m_joyState[Z_KEY] = keyState;
                 continue;
             }
             break;
