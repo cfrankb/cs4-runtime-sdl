@@ -301,6 +301,12 @@ void CGameMixin::drawScreen(CFrame &bitmap)
             }
             // draw tile
             CFrame *tile = nullptr;
+            if (tileID >= TILES_MAX)
+            {
+                // ignore invalid tiles
+                continue;
+            }
+
             if (tileID == TILES_DIAMOND ||
                 tileID == TILES_FORCE_FIELD ||
                 tileID == TILES_TRIFORCE ||

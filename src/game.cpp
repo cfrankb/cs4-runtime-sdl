@@ -167,6 +167,13 @@ bool CGame::initLevel()
                 addActor(CActor(x, y, TYPE_MONSTER, TILES_OCTOPUS, CActor::Left));
                 m_map.at(x, y) = TILES_LADDER;
                 break;
+            default:
+                // sanitize invalid tiles
+                if (tileID >= TILES_MAX)
+                {
+                    printf("invalid tile at (%d,%d) %.2x [attr:%.2x]\n", x, y, tileID, m_map.getAttr(x, y));
+                    m_map.at(x, y) = TILES_BLANK;
+                }
             }
         }
     }
@@ -408,13 +415,15 @@ void CGame::consume()
     const int y = m_player.y();
     const uint8_t pu = m_map.at(x, y);
     const uint8_t rawData = m_map.getAttr(x, y);
-    const tiledef_t &def = getTileDef(pu);
-    if (rawData & FLAG_HIDDEN)
+    if (rawData & FLAG_HIDDEN || (pu >= TILES_MAX))
     {
         // hidden tiles cannot be consumed
+        // invalid tiles should be ignored
         return;
     }
-    else if (def.type == TYPE_PICKUP)
+
+    const tiledef_t &def = getTileDef(pu);
+    if (def.type == TYPE_PICKUP)
     {
         addPoints(def.score);
         m_map.at(m_player.x(), m_player.y()) = TILES_BLANK;
@@ -563,8 +572,13 @@ int CGame::flipHiddenFlag(const uint8_t attr)
         if (tileAttr == attr)
         {
             const Pos pos = CMap::toPos(key);
-            const uint8_t tile = m_map.at(pos.x, pos.y);
-            const auto &def = getTileDef(tile);
+            const uint8_t tileID = m_map.at(pos.x, pos.y);
+            if (tileID >= TILES_MAX)
+            {
+                // ignore invalid tile
+                continue;
+            }
+            const auto &def = getTileDef(tileID);
             printf("-->found at x: %d y: %d type:%.2x attr %.2x\n",
                    pos.x, pos.y, def.type, rawData);
             if (def.type == TYPE_SWITCH ||
