@@ -19,12 +19,12 @@ const tiledef_t tileDefs[] = {
      {0x00, TYPE_PICKUP, 99, 20, 0, 0, false, "TriForce"},                  // 0c TILES_TRIFORCE
      {0x00, TYPE_PICKUP, 37, 0, 0, 0, false, "Shield"},                     // 0d TILES_SHIELD
      {0x00, TYPE_LADDER, 0, 0, 0, 0, false, "Ladder"},                      // 0e TILES_LADDER
-     {0x00, TYPE_SPECIAL, 0, 0, 0, 0, false, "Rope <- Pulley"},             // 0f TILES_ROPE_PULLEY
-     {0x00, TYPE_SPECIAL, 0, 0, 0, 0, false, "Pulley"},                     // 10 TILES_PULLEY
-     {0x00, TYPE_SPECIAL, 0, 0, 0, 0, false, "Rope    Pulley"},             // 11 TILES_ROPE_PULLEY_11
-     {0x00, TYPE_SPECIAL, 0, 0, 0, 0, false, "Pulley"},                     // 12 TILES_PULLEY_12
-     {0x00, TYPE_SPECIAL, 0, 0, 0, 0, false, "Pulley -> Rope"},             // 13 TILES_PULLEY_ROPE
-     {0x00, TYPE_SPECIAL, 0, 0, 0, 0, false, "Pulley    Rope"},             // 14 TILES_PULLEY_ROPE_14
+     {0x00, TYPE_AUTO_ROPE, 0, 0, 0, 0, false, "LEFT Rope <- Pulley"},      // 0f TILES_LEFT_ROPE_PULLEY
+     {0x00, TYPE_PULLEY, 0, 0, 0, 0, false, "LEFT Pulley (no rope)"},       // 10 TILES_LEFT_PULLEY
+     {0x00, TYPE_AUTO_ROPE, 0, 0, 0, 0, false, "LEFT Rope    Pulley"},      // 11 TILES_LEFT_ROPE
+     {0x00, TYPE_PULLEY, 0, 0, 0, 0, false, "RIGHT Pulley (no rope)"},      // 12 TILES_RIGHT_PULLEY
+     {0x00, TYPE_AUTO_ROPE, 0, 0, 0, 0, false, "RIGHT Pulley -> Rope"},     // 13 TILES_RIGHT_PULLEY_ROPE
+     {0x00, TYPE_AUTO_ROPE, 0, 0, 0, 0, false, "RIGHT Pulley    Rope"},     // 14 TILES_RIGHT_ROPE
      {0x00, TYPE_SWITCH, 0, 0, 0, 0, false, "ELectric SWitch UP"},          // 15 TILES_SWITCH_UP
      {0x00, TYPE_SWITCH, 0, 0, 0, 0, false, "ELectric SWitch DN"},          // 16 TILES_SWITCH_DOWN
      {0x00, TYPE_SPECIAL, 0, 0, 0, 0, false, "Deadly Socket XXX"},          // 17 TILES_DEADLY_SOCKET_XXX
@@ -32,8 +32,8 @@ const tiledef_t tileDefs[] = {
      {0x00, TYPE_SPECIAL, 0, 0, 0, 0, false, "Unpowed Socket"},             // 19 TILES_UNPOWED_SOCKET
      {0x00, TYPE_SPECIAL, 0, 0, 0, 0, false, "UNLighted Bulb in screw"},    // 1a TILES_UNLIGHTED_BULB_IN_SCREW
      {0x00, TYPE_PICKUP, 50, 0, 0, 0, false, "Magic Box"},                  // 1b TILES_MAGIC_BOX
-     {0x00, TYPE_SPECIAL, 0, 0, 0, 0, false, "Right Pulley with rope"},     // 1c TILES_RIGHT_PULLEY_WITH_ROPE
-     {0x00, TYPE_SPECIAL, 0, 0, 0, 0, false, "Left Pulley with rope"},      // 1d TILES_LEFT_PULLEY_WITH_ROPE
+     {0x00, TYPE_PULLEY, 0, 0, 0, 0, false, "Left Pulley with rope"},       // 1c TILES_LEFT_PULLEY_WITH_ROPE
+     {0x00, TYPE_PULLEY, 0, 0, 0, 0, false, "Right Pulley with rope"},      // 1d TILES_RIGHT_PULLEY_WITH_ROPE
      {0x00, TYPE_KEY, 25, 0, 0, 0, false, "HeartKey"},                      // 1e TILES_HEARTKEY
      {0x00, TYPE_DOOR, 0, 0, 0, 0, false, "HeartDoor"},                     // 1f TILES_HEARTDOOR
      {0x00, TYPE_KEY, 25, 0, 0, 0, false, "WaterKey"},                      // 20 TILES_WATERKEY

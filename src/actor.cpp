@@ -87,6 +87,8 @@ bool CActor::canMove(const int aim)
              def.type == TYPE_BRIDGE ||
              def.type == TYPE_ROOT ||
              def.type == TYPE_SPECIAL ||
+             def.type == TYPE_PULLEY ||
+             def.type == TYPE_AUTO_ROPE ||
              def.type == TYPE_TRAP)
     {
         return true;

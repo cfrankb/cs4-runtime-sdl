@@ -58,6 +58,8 @@ const tiledef_t & getTileDef(int i);
 #define TYPE_TRAP                        0x12
 #define TYPE_BRIDGE                      0x13
 #define TYPE_ROOT                        0x14
+#define TYPE_PULLEY                      0x15
+#define TYPE_AUTO_ROPE                   0x16
 #define TYPE_UNUSED                      0xff
 
 // animz
@@ -133,12 +135,12 @@ const tiledef_t & getTileDef(int i);
 #define TILES_TRIFORCE                   0x0c // TriForce
 #define TILES_SHIELD                     0x0d // Shield
 #define TILES_LADDER                     0x0e // Ladder
-#define TILES_ROPE_PULLEY                0x0f // Rope <- Pulley
-#define TILES_PULLEY                     0x10 // Pulley
-#define TILES_ROPE_PULLEY_11             0x11 // Rope    Pulley
-#define TILES_PULLEY_12                  0x12 // Pulley
-#define TILES_PULLEY_ROPE                0x13 // Pulley -> Rope
-#define TILES_PULLEY_ROPE_14             0x14 // Pulley    Rope
+#define TILES_LEFT_ROPE_PULLEY           0x0f // LEFT Rope <- Pulley
+#define TILES_LEFT_PULLEY                0x10 // LEFT Pulley (no rope)
+#define TILES_LEFT_ROPE                  0x11 // LEFT Rope    Pulley
+#define TILES_RIGHT_PULLEY               0x12 // RIGHT Pulley (no rope)
+#define TILES_RIGHT_PULLEY_ROPE          0x13 // RIGHT Pulley -> Rope
+#define TILES_RIGHT_ROPE                 0x14 // RIGHT Pulley    Rope
 #define TILES_SWITCH_UP                  0x15 // ELectric SWitch UP
 #define TILES_SWITCH_DOWN                0x16 // ELectric SWitch DN
 #define TILES_DEADLY_SOCKET_XXX          0x17 // Deadly Socket XXX
@@ -146,8 +148,8 @@ const tiledef_t & getTileDef(int i);
 #define TILES_UNPOWED_SOCKET             0x19 // Unpowed Socket
 #define TILES_UNLIGHTED_BULB_IN_SCREW    0x1a // UNLighted Bulb in screw
 #define TILES_MAGIC_BOX                  0x1b // Magic Box
-#define TILES_RIGHT_PULLEY_WITH_ROPE     0x1c // Right Pulley with rope
-#define TILES_LEFT_PULLEY_WITH_ROPE      0x1d // Left Pulley with rope
+#define TILES_LEFT_PULLEY_WITH_ROPE      0x1c // Left Pulley with rope
+#define TILES_RIGHT_PULLEY_WITH_ROPE     0x1d // Right Pulley with rope
 #define TILES_HEARTKEY                   0x1e // HeartKey
 #define TILES_HEARTDOOR                  0x1f // HeartDoor
 #define TILES_WATERKEY                   0x20 // WaterKey

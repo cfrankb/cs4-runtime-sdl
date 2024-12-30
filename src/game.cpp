@@ -240,12 +240,27 @@ void CGame::managePlayer(const uint8_t *joystate)
 {
     m_godModeTimer = std::max(m_godModeTimer - 1, 0);
     m_extraSpeedTimer = std::max(m_extraSpeedTimer - 1, 0);
+
+    manageHazards();
+
+    uint8_t aims[] = {CActor::Up, CActor::Down, CActor::Left, CActor::Right};
+    for (uint8_t i = 0; i < 4; ++i)
+    {
+        uint8_t aim = aims[i];
+        if (joystate[aim] && move(aim))
+        {
+            break;
+        }
+    }
+
+    manageActionKeys(joystate);
+}
+
+void CGame::manageHazards()
+{
     const auto x = m_player.x();
     const auto y = m_player.y();
-    auto const pu = m_map.at(x, y);
-    auto const rawAttr = m_map.getAttr(x, y);
-    auto const env = rawAttr & FILTER_HAZARD;
-
+    const auto env = m_map.getAttr(x, y) & FILTER_HAZARD;
     if (env == ENV_WATER)
     {
         // suffocate
@@ -269,17 +284,19 @@ void CGame::managePlayer(const uint8_t *joystate)
         // restore oxygen
         m_oxygen = std::max(m_oxygen, _same(m_oxygen, DEFAULT_OXYGEN));
     }
+}
 
-    uint8_t aims[] = {CActor::Up, CActor::Down, CActor::Left, CActor::Right};
-    for (uint8_t i = 0; i < 4; ++i)
+void CGame::manageActionKeys(const uint8_t *joystate)
+{
+    const auto x = m_player.x();
+    const auto y = m_player.y();
+    const auto pu = m_map.at(x, y);
+    if (pu >= TILES_MAX)
     {
-        uint8_t aim = aims[i];
-        if (joystate[aim] && move(aim))
-        {
-            break;
-        }
+        // sanity check
+        return;
     }
-
+    auto const rawAttr = m_map.getAttr(x, y);
     const tiledef_t &def = getTileDef(pu);
     const auto attr = rawAttr & FILTER_ATTR;
     if (joystate[Z_KEY] && def.type == TYPE_SWITCH)
@@ -288,7 +305,7 @@ void CGame::managePlayer(const uint8_t *joystate)
         {
             m_map.set(x, y, TILES_SWITCH_DOWN);
         }
-        else
+        else if (pu == TILES_SWITCH_DOWN)
         {
             m_map.set(x, y, TILES_SWITCH_UP);
         }
@@ -297,10 +314,90 @@ void CGame::managePlayer(const uint8_t *joystate)
             flipHiddenFlag(attr);
         }
     }
+    else if (joystate[Z_KEY] && def.type == TYPE_PULLEY)
+    {
+        switch (pu)
+        {
+        case TILES_LEFT_PULLEY_WITH_ROPE:
+            // with rope
+            m_map.set(x, y, TILES_LEFT_PULLEY);
+            ++m_ropes;
+            takeRope(CActor::Left);
+            break;
+        case TILES_RIGHT_PULLEY_WITH_ROPE:
+            m_map.set(x, y, TILES_RIGHT_PULLEY);
+            ++m_ropes;
+            takeRope(CActor::Right);
+            break;
+
+        case TILES_LEFT_PULLEY:
+            // no rope
+            if (m_ropes)
+            {
+                m_map.set(x, y, TILES_LEFT_PULLEY_WITH_ROPE);
+                putRope(CActor::Left);
+                --m_ropes;
+            }
+            break;
+        case TILES_RIGHT_PULLEY:
+            if (m_ropes)
+            {
+                m_map.set(x, y, TILES_RIGHT_PULLEY_WITH_ROPE);
+                putRope(CActor::Right);
+                --m_ropes;
+            }
+        }
+    }
 
     if (joystate[KILL_KEY])
     {
         killPlayer();
+    }
+}
+
+void CGame::takeRope(const uint8_t aim)
+{
+    const uint8_t offset = (aim == CActor::Left ? -1 : 1);
+    const auto x = m_player.x();
+    const auto y = m_player.y();
+    for (uint8_t row = 0;; ++row)
+    {
+        uint expectedTile;
+        if (row == 0)
+        {
+            expectedTile = (aim == CActor::Left ? TILES_LEFT_ROPE_PULLEY : TILES_RIGHT_PULLEY_ROPE);
+        }
+        else
+        {
+            expectedTile = (aim == CActor::Left ? TILES_LEFT_ROPE : TILES_RIGHT_ROPE);
+        }
+
+        if (m_map.at(x + offset, y + row) == expectedTile)
+        {
+            m_map.at(x + offset, y + row) = TILES_BLANK;
+        }
+        else
+        {
+            break;
+        }
+    }
+}
+
+void CGame::putRope(const uint8_t aim)
+{
+    const uint8_t offset = (aim == CActor::Left ? -1 : 1);
+    const auto x = m_player.x();
+    const auto y = m_player.y();
+    for (uint8_t row = 0; m_map.at(x + offset, y + row) == TILES_BLANK; ++row)
+    {
+        if (row == 0)
+        {
+            m_map.at(x + offset, y + row) = (aim == CActor::Left ? TILES_LEFT_ROPE_PULLEY : TILES_RIGHT_PULLEY_ROPE);
+        }
+        else
+        {
+            m_map.at(x + offset, y + row) = (aim == CActor::Left ? TILES_LEFT_ROPE : TILES_RIGHT_ROPE);
+        }
     }
 }
 
@@ -468,6 +565,10 @@ void CGame::consume()
     {
         // do no consume blank or transporter
         return;
+    }
+    else if (def.type == TYPE_SPECIAL)
+    {
+        printf("special :%.2x\n", pu);
     }
 
     // apply flags

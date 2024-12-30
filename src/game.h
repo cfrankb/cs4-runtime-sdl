@@ -78,6 +78,10 @@ private:
     void addOxygen(const int oxygen);
     void addKey(const uint8_t c);
     int flipHiddenFlag(const uint8_t attr);
+    void manageActionKeys(const uint8_t *joystate);
+    void manageHazards();
+    void putRope(const uint8_t aim);
+    void takeRope(const uint8_t aim);
 
     enum : int
     {
