@@ -1,4 +1,11 @@
-def get_pair(line):
+TILEDEF:str = '''
+const tiledef_t &getTileDef(int i)
+{
+    return tileDefs[i];
+}
+'''
+
+def get_pair(line:str) -> list[str]:
     pair = []
     for e in line.split(' '):
         e = e.strip()
@@ -108,7 +115,7 @@ const tiledef_t & getTileDef(int i);
                        item_def = f'''{{0x00, TYPE_{type_name}, {score}, {hp}, 0, 0, false, "{name}"}}, '''
                        data.append(f'''     {item_def:70} // {val:0>2x} {def_name}''')
                 else:
-                    print(f'no type defined on line {line_num}')
+                    print(f'warning: no type defined on line {line_num}')
 
             i += 1
         else:
@@ -119,12 +126,7 @@ const tiledef_t & getTileDef(int i);
 
     with open('../../src/tilesdata.cpp', 'w') as tfile:
         data.append('};')
-        data.append('''
-const tiledef_t &getTileDef(int i)
-{
-    return tileDefs[i];
-}
-''')
+        data.append(TILEDEF)
         tfile.write('\n'.join(data))
 
 main()

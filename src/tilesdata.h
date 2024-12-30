@@ -60,6 +60,7 @@ const tiledef_t & getTileDef(int i);
 #define TYPE_ROOT                        0x14
 #define TYPE_PULLEY                      0x15
 #define TYPE_AUTO_ROPE                   0x16
+#define TYPE_SOCKET                      0x17
 #define TYPE_UNUSED                      0xff
 
 // animz
@@ -143,10 +144,10 @@ const tiledef_t & getTileDef(int i);
 #define TILES_RIGHT_ROPE                 0x14 // RIGHT Pulley    Rope
 #define TILES_SWITCH_UP                  0x15 // ELectric SWitch UP
 #define TILES_SWITCH_DOWN                0x16 // ELectric SWitch DN
-#define TILES_DEADLY_SOCKET_XXX          0x17 // Deadly Socket XXX
-#define TILES_LIGHT_BULB_IN_SOCKET       0x18 // Light Bulb in Socket
-#define TILES_UNPOWED_SOCKET             0x19 // Unpowed Socket
-#define TILES_UNLIGHTED_BULB_IN_SCREW    0x1a // UNLighted Bulb in screw
+#define TILES_SOCKET_ON                  0x17 // Deadly Socket XXX
+#define TILES_LIGHTBULB_SOCKET_ON        0x18 // Light Bulb in Socket
+#define TILES_SOCKET_OFF                 0x19 // Unpowed Socket
+#define TILES_LIGHTBULB_SOCKET_OFF       0x1a // UNLighted Bulb in screw
 #define TILES_MAGIC_BOX                  0x1b // Magic Box
 #define TILES_LEFT_PULLEY_WITH_ROPE      0x1c // Left Pulley with rope
 #define TILES_RIGHT_PULLEY_WITH_ROPE     0x1d // Right Pulley with rope

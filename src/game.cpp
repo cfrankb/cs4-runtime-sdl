@@ -311,7 +311,7 @@ void CGame::manageActionKeys(const uint8_t *joystate)
         }
         if (attr)
         {
-            flipHiddenFlag(attr);
+            triggerFlip(attr);
         }
     }
     else if (joystate[Z_KEY] && def.type == TYPE_PULLEY)
@@ -357,7 +357,7 @@ void CGame::manageActionKeys(const uint8_t *joystate)
 
 void CGame::takeRope(const uint8_t aim)
 {
-    const uint8_t offset = (aim == CActor::Left ? -1 : 1);
+    const int8_t offset = (aim == CActor::Left ? -1 : 1);
     const auto x = m_player.x();
     const auto y = m_player.y();
     for (uint8_t row = 0;; ++row)
@@ -385,7 +385,7 @@ void CGame::takeRope(const uint8_t aim)
 
 void CGame::putRope(const uint8_t aim)
 {
-    const uint8_t offset = (aim == CActor::Left ? -1 : 1);
+    const int8_t offset = (aim == CActor::Left ? -1 : 1);
     const auto x = m_player.x();
     const auto y = m_player.y();
     for (uint8_t row = 0; m_map.at(x + offset, y + row) == TILES_BLANK; ++row)
@@ -597,7 +597,7 @@ void CGame::consume()
         {
             const uint8_t env = m_map.getAttr(x, y) & FILTER_ENV;
             m_map.setAttr(x, y, env);
-            if (flipHiddenFlag(attr))
+            if (triggerFlip(attr))
             {
                 //    playSound(SOUND_0009);
             }
@@ -663,9 +663,9 @@ void CGame::addKey(const uint8_t c)
     }
 }
 
-int CGame::flipHiddenFlag(const uint8_t attr)
+int CGame::triggerFlip(const uint8_t attr)
 {
-    printf("flipHiddenFlag %.2x\n", attr);
+    printf("triggerFlip %.2x\n", attr);
     int count = 0;
     for (const auto &[key, rawData] : m_map.attrs())
     {
@@ -685,12 +685,30 @@ int CGame::flipHiddenFlag(const uint8_t attr)
             if (def.type == TYPE_SWITCH ||
                 def.type == TYPE_TRANS_DEST ||
                 def.type == TYPE_TRANS_SOURCE ||
-                def.type == TYPE_DIAMOND)
+                def.type == TYPE_DIAMOND ||
+                def.type == TYPE_PICKUP)
             {
                 continue;
             }
             ++count;
-            m_map.setAttr(pos.x, pos.y, rawData ^ FLAG_HIDDEN);
+
+            if (def.type == TYPE_SOCKET)
+            {
+                switch (tileID)
+                {
+                case TILES_SOCKET_OFF:
+                case TILES_SOCKET_ON:
+                    m_map.at(pos.x, pos.y) = tileID ^ 0xe;
+                    break;
+                case TILES_LIGHTBULB_SOCKET_OFF:
+                case TILES_LIGHTBULB_SOCKET_ON:
+                    m_map.at(pos.x, pos.y) = tileID ^ 2;
+                }
+            }
+            else
+            {
+                m_map.setAttr(pos.x, pos.y, rawData ^ FLAG_HIDDEN);
+            }
         }
     }
     return count;

@@ -27,10 +27,10 @@ const tiledef_t tileDefs[] = {
      {0x00, TYPE_AUTO_ROPE, 0, 0, 0, 0, false, "RIGHT Pulley    Rope"},     // 14 TILES_RIGHT_ROPE
      {0x00, TYPE_SWITCH, 0, 0, 0, 0, false, "ELectric SWitch UP"},          // 15 TILES_SWITCH_UP
      {0x00, TYPE_SWITCH, 0, 0, 0, 0, false, "ELectric SWitch DN"},          // 16 TILES_SWITCH_DOWN
-     {0x00, TYPE_SPECIAL, 0, 0, 0, 0, false, "Deadly Socket XXX"},          // 17 TILES_DEADLY_SOCKET_XXX
-     {0x00, TYPE_SPECIAL, 0, 0, 0, 0, false, "Light Bulb in Socket"},       // 18 TILES_LIGHT_BULB_IN_SOCKET
-     {0x00, TYPE_SPECIAL, 0, 0, 0, 0, false, "Unpowed Socket"},             // 19 TILES_UNPOWED_SOCKET
-     {0x00, TYPE_SPECIAL, 0, 0, 0, 0, false, "UNLighted Bulb in screw"},    // 1a TILES_UNLIGHTED_BULB_IN_SCREW
+     {0x00, TYPE_SOCKET, 0, 0, 0, 0, false, "Deadly Socket XXX"},           // 17 TILES_SOCKET_ON
+     {0x00, TYPE_SOCKET, 0, 0, 0, 0, false, "Light Bulb in Socket"},        // 18 TILES_LIGHTBULB_SOCKET_ON
+     {0x00, TYPE_SOCKET, 0, 0, 0, 0, false, "Unpowed Socket"},              // 19 TILES_SOCKET_OFF
+     {0x00, TYPE_SOCKET, 0, 0, 0, 0, false, "UNLighted Bulb in screw"},     // 1a TILES_LIGHTBULB_SOCKET_OFF
      {0x00, TYPE_PICKUP, 50, 0, 0, 0, false, "Magic Box"},                  // 1b TILES_MAGIC_BOX
      {0x00, TYPE_PULLEY, 0, 0, 0, 0, false, "Left Pulley with rope"},       // 1c TILES_LEFT_PULLEY_WITH_ROPE
      {0x00, TYPE_PULLEY, 0, 0, 0, 0, false, "Right Pulley with rope"},      // 1d TILES_RIGHT_PULLEY_WITH_ROPE
