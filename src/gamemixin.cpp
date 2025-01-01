@@ -565,7 +565,8 @@ void CGameMixin::manageGamePlay()
         m_animator->animate();
     }
 
-    game.manageMonsters(m_ticks);
+    // not ready yet
+    // game.manageMonsters(m_ticks);
 
     if (game.isPlayerDead())
     {

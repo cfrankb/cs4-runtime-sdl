@@ -3,9 +3,7 @@
 #include "tilesdata.h"
 #include "shared/Frame.h"
 #include "shared/FrameSet.h"
-#include "shared/FileWrap.h"
 
-const char DEFAULT_ARCH[] = "data/levels.mapz-cs4";
 CGame *g_gamePrivate = nullptr;
 #define _same(_t, _v) static_cast<decltype(_t)>(_v)
 
@@ -43,17 +41,18 @@ bool CGame::loadLevel(bool restart)
     const auto levelCount = m_mapIndex.size();
     const int offset = m_mapIndex[m_level % levelCount];
     FILE *sfile = fopen(m_mapArch.c_str(), "rb");
-    if (sfile == nullptr)
-    {
-        printf("couldn't open %s\n", m_mapArch.c_str());
-        return false;
-    }
-    else if (sfile)
+    if (sfile)
     {
         fseek(sfile, offset, SEEK_SET);
         m_map.read(sfile);
         fclose(sfile);
     }
+    else
+    {
+        printf("couldn't open %s\n", m_mapArch.c_str());
+        return false;
+    }
+
     m_hp = DEFAULT_HP;
     m_oxygen = DEFAULT_OXYGEN;
     m_ropes = 0;
@@ -74,7 +73,12 @@ void CGame::init()
 
 void CGame::addActor(const CActor &actor)
 {
-    m_actors[m_actorCount++] = actor;
+    if (m_actorCount != m_actorMax)
+    {
+        m_actors[m_actorCount++] = actor;
+        return;
+    }
+    printf("too many actors. limit reached.\n");
 }
 
 bool CGame::initLevel()
@@ -244,7 +248,7 @@ void CGame::managePlayer(const uint8_t *joystate)
     manageHazards();
 
     uint8_t aims[] = {CActor::Up, CActor::Down, CActor::Left, CActor::Right};
-    for (uint8_t i = 0; i < 4; ++i)
+    for (size_t i = 0; i < sizeof(aims); ++i)
     {
         uint8_t aim = aims[i];
         if (joystate[aim] && move(aim))
@@ -401,8 +405,137 @@ void CGame::putRope(const uint8_t aim)
     }
 }
 
+void CGame::breakBridge()
+{
+    const auto x = m_player.x();
+    const auto y = m_player.y();
+    const auto tileID = m_map.at(x, y);
+    if (tileID >= TILES_MAX)
+    {
+        // sanity check
+        return;
+    }
+    auto const rawAttr = m_map.getAttr(x, y);
+    if (rawAttr & FLAG_HIDDEN)
+    {
+        return;
+    }
+    const tiledef_t &def = getTileDef(tileID);
+    if (!def.type == TYPE_BRIDGE || tileID != TILES_BRIDGE_0)
+    {
+        return;
+    }
+    if (tileID != TILES_BRIDGE_11)
+    {
+        m_map.set(x, y, tileID + 1);
+    }
+    else
+    {
+        m_map.set(x, y, TILES_BLANK);
+    }
+}
+
 void CGame::manageMonsters(const uint32_t ticks)
 {
+    const int speedCount = 9;
+    bool speeds[speedCount];
+    for (uint32_t i = 0; i < sizeof(speeds); ++i)
+    {
+        speeds[i] = i ? (ticks % i) == 0 : true;
+    }
+
+    uint8_t dirs[] = {CActor::Up, CActor::Down, CActor::Left, CActor::Right};
+    std::vector<CActor> newMonsters;
+
+    for (int i = 0; i < m_actorCount; ++i)
+    {
+        CActor &actor = m_actors[i];
+        uint8_t cs = m_map.at(actor.x(), actor.y());
+        const tiledef_t &def = getTileDef(cs);
+        if (!speeds[def.speed])
+        {
+            continue;
+        }
+        if (def.type == TYPE_MONSTER)
+        {
+            if (actor.isPlayerThere(actor.aim()))
+            {
+                // apply health damages
+                addHealth(def.health);
+                if (def.ai & AI_STICKY)
+                {
+                    continue;
+                }
+            }
+
+            int aim = actor.findNextDir();
+            if (aim != CActor::None)
+            {
+                actor.move(aim);
+                if (!(def.ai & AI_ROUND))
+                {
+                    continue;
+                }
+            }
+            for (uint8_t i = 0; i < sizeof(dirs); ++i)
+            {
+                if (actor.isPlayerThere(dirs[i]))
+                {
+                    // apply health damages
+                    addHealth(def.health);
+                    if (def.ai & AI_FOCUS)
+                    {
+                        actor.setAim(dirs[i]);
+                    }
+                    break;
+                }
+            }
+        }
+        else if (def.type == TYPE_VAMPLANT)
+        {
+            if (actor.isPlayerThere(CActor::Here))
+            {
+                // apply damage from config
+                addHealth(def.health);
+            }
+            for (uint8_t i = 0; i < sizeof(dirs); ++i)
+            {
+                if (actor.isPlayerThere(dirs[i]))
+                {
+                    // apply damage from config
+                    addHealth(def.health);
+                }
+            }
+        }
+        else if (def.type == TYPE_DRONE)
+        {
+            int aim = actor.aim();
+            if (aim < CActor::Left)
+            {
+                aim = CActor::Left;
+            }
+            if (actor.isPlayerThere(actor.aim()))
+            {
+                // apply health damages
+                addHealth(def.health);
+            }
+            if (actor.canMove(aim))
+            {
+                actor.move(aim);
+            }
+            else
+            {
+                aim ^= 1;
+            }
+            actor.setAim(aim);
+        }
+    }
+
+    // moved here to avoid reallocation while using a reference
+    for (auto const &monster : newMonsters)
+    {
+        addActor(monster);
+    }
 }
 
 CGame *CGame::getGame()
@@ -506,6 +639,11 @@ CActor &CGame::getMonster(int i)
     return m_actors[i];
 }
 
+CActor &CGame::player()
+{
+    return m_player;
+}
+
 void CGame::consume()
 {
     const int x = m_player.x();
@@ -537,7 +675,6 @@ void CGame::consume()
         {
             ++m_bulbs;
         }
-        // playTileSound(pu);
     }
     else if (def.type == TYPE_KEY)
     {
@@ -545,7 +682,6 @@ void CGame::consume()
         m_map.at(m_player.x(), m_player.y()) = TILES_BLANK;
         addKey(pu);
         addHealth(def.health);
-        //        playSound(SOUND_KEY);
     }
     else if (def.type == TYPE_DIAMOND)
     {
@@ -553,7 +689,6 @@ void CGame::consume()
         m_map.at(m_player.x(), m_player.y()) = TILES_BLANK;
         --m_goals;
         addHealth(def.health);
-        //  playTileSound(pu);
     }
     else if (def.type == TYPE_SWAMP)
     {
@@ -565,6 +700,39 @@ void CGame::consume()
     {
         // do no consume blank or transporter
         return;
+    }
+    else if (def.type == TYPE_SOCKET)
+    {
+        if (pu == TILES_SOCKET_OFF && m_bulbs != 0)
+        {
+            m_map.at(m_player.x(), m_player.y()) = TILES_LIGHTBULB_SOCKET_OFF;
+            --m_bulbs;
+        }
+        else if (pu == TILES_SOCKET_ON && m_bulbs != 0)
+        {
+            m_map.at(m_player.x(), m_player.y()) = TILES_LIGHTBULB_SOCKET_ON;
+            --m_bulbs;
+        }
+        else if (pu == TILES_SOCKET_ON)
+        {
+            m_hp = 0;
+        }
+        return;
+    }
+    else if (def.type == TYPE_TRAP)
+    {
+        if (pu == TILES_BREAKABLE_ROOT)
+        {
+        }
+        else if (pu == TILES_FREEZE_TRAP)
+        {
+        }
+        else if (pu == TILES_ENERGY_DRAIN_TRAP)
+        {
+        }
+        addHealth(def.health);
+        addPoints(def.score);
+        m_map.at(m_player.x(), m_player.y()) = TILES_BLANK;
     }
     else if (def.type == TYPE_SPECIAL)
     {
@@ -591,17 +759,13 @@ void CGame::consume()
     const uint8_t attr = rawData & FILTER_ATTR;
     if (attr)
         printf("attr : %.2x\n", attr);
-    if (attr != 0 && attr != ATTR_STOP)
+    if (attr != 0 &&
+        attr != ATTR_STOP &&
+        def.type != TYPE_SWITCH)
     {
-        if (def.type != TYPE_SWITCH)
-        {
-            const uint8_t env = m_map.getAttr(x, y) & FILTER_ENV;
-            m_map.setAttr(x, y, env);
-            if (triggerFlip(attr))
-            {
-                //    playSound(SOUND_0009);
-            }
-        }
+        const uint8_t env = m_map.getAttr(x, y) & FILTER_ENV;
+        m_map.setAttr(x, y, env);
+        triggerFlip(attr);
     }
 }
 

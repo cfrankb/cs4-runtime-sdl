@@ -16,10 +16,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "runtime.h"
+#include <cstring>
 #include "game.h"
 #include "shared/Frame.h"
 #include "shared/FrameSet.h"
-#include <cstring>
 #include "shared/FileWrap.h"
 
 #ifdef __EMSCRIPTEN__

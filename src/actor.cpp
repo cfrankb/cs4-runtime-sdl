@@ -1,7 +1,20 @@
 #include "actor.h"
-#include "map.h"
 #include "game.h"
 #include "tilesdata.h"
+
+enum
+{
+    AIM_UP,
+    AIM_DOWN,
+    AIM_LEFT,
+    AIM_RIGHT
+};
+
+uint8_t AIMS[] = {
+    AIM_DOWN, AIM_RIGHT, AIM_UP, AIM_LEFT,
+    AIM_UP, AIM_LEFT, AIM_DOWN, AIM_RIGHT,
+    AIM_RIGHT, AIM_UP, AIM_LEFT, AIM_DOWN,
+    AIM_LEFT, AIM_DOWN, AIM_RIGHT, AIM_UP};
 
 CActor::CActor(const uint8_t x, const uint8_t y, const uint8_t type, const uint8_t tileID, const uint8_t aim)
 {
@@ -56,7 +69,7 @@ void CActor::setAim(const uint8_t _aim)
     m_aim = _aim;
 }
 
-bool CActor::canMove(const int aim)
+bool CActor::canMove(const int aim) const
 {
     auto &game = *CGame::getGame();
     CMap &map = game.map();
@@ -126,14 +139,43 @@ void CActor::move(const int aim)
     auto &game = *CGame::getGame();
     CMap &map = game.map();
     uint8_t c = map.at(m_x, m_y);
-    //    map.set(m_x, m_y, m_pu);
 
     Pos pos{m_x, m_y};
     pos = game.translate(pos, aim);
     m_x = pos.x;
     m_y = pos.y;
 
-    // m_pu = map.at(m_x, m_y);
-    // map.set(m_x, m_y, c);
     m_aim = aim;
+}
+
+uint8_t CActor::findNextDir() const
+{
+    int i = AimCount - 1;
+    while (i >= 0)
+    {
+        int aim = AIMS[m_aim * AimCount + i];
+        if (canMove(aim))
+        {
+            return aim;
+        }
+        --i;
+    }
+    return None;
+}
+
+bool CActor::isPlayerThere(const uint8_t aim) const
+{
+    auto &game = *CGame::getGame();
+    const auto &player = game.player();
+    if (aim == Here)
+    {
+        return player.x() == m_x && player.y() == m_y;
+    }
+    const auto newPos = game.translate(Pos{m_x, m_y}, aim);
+    return newPos.x == player.x() && newPos.y == player.y();
+}
+
+const Pos CActor::pos() const
+{
+    return Pos{m_x, m_y};
 }

@@ -24,11 +24,7 @@ public:
     int mode();
     uint8_t *keys();
     bool hasKey(uint8_t c);
-    inline CActor &player()
-    {
-        return m_player;
-    }
-
+    CActor &player();
     CMap &map();
     void nextLevel();
     void restartGame();
@@ -82,6 +78,7 @@ private:
     void manageHazards();
     void putRope(const uint8_t aim);
     void takeRope(const uint8_t aim);
+    void breakBridge();
 
     enum : int
     {

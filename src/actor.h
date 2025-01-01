@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include "map.h"
 
 #pragma once
 
@@ -15,12 +16,15 @@ public:
     uint8_t type() const;
     uint8_t tileID() const;
     void setAim(const uint8_t _aim);
-    bool canMove(const int aim);
+    bool canMove(const int aim) const;
     void move(const int aim);
-    inline bool within(int x1, int y1, int x2, int y2) const
+    inline bool within(const int x1, const int y1, const int x2, const int y2) const
     {
         return (m_x >= x1) && (m_x < x2) && (m_y >= y1) && (m_y < y2);
     }
+    uint8_t findNextDir() const;
+    bool isPlayerThere(const uint8_t aim) const;
+    const Pos pos() const;
 
     enum
     {
@@ -28,7 +32,10 @@ public:
         Down,
         Left,
         Right,
-        Fall = 0xff
+        AimCount,
+        Fall = 0x80,
+        Here = 0xf0,
+        None = 0xff
     };
 
 protected:

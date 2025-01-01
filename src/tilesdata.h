@@ -19,6 +19,7 @@ const tiledef_t & getTileDef(int i);
 
 
 // flag
+#define FLAG_NONE                        0x00
 #define FLAG_GODMODE                     0x01
 #define FLAG_EXTRA_LIFE                  0x02
 #define FLAG_EXTRA_SPEED                 0x04
@@ -144,10 +145,10 @@ const tiledef_t & getTileDef(int i);
 #define TILES_RIGHT_ROPE                 0x14 // RIGHT Pulley    Rope
 #define TILES_SWITCH_UP                  0x15 // ELectric SWitch UP
 #define TILES_SWITCH_DOWN                0x16 // ELectric SWitch DN
-#define TILES_SOCKET_ON                  0x17 // Deadly Socket XXX
-#define TILES_LIGHTBULB_SOCKET_ON        0x18 // Light Bulb in Socket
-#define TILES_SOCKET_OFF                 0x19 // Unpowed Socket
-#define TILES_LIGHTBULB_SOCKET_OFF       0x1a // UNLighted Bulb in screw
+#define TILES_SOCKET_ON                  0x17 // Socket ON
+#define TILES_LIGHTBULB_SOCKET_ON        0x18 // Light Bulb in Socket ON
+#define TILES_SOCKET_OFF                 0x19 // Socket OFF
+#define TILES_LIGHTBULB_SOCKET_OFF       0x1a // Light Bulb in Socket OFF
 #define TILES_MAGIC_BOX                  0x1b // Magic Box
 #define TILES_LEFT_PULLEY_WITH_ROPE      0x1c // Left Pulley with rope
 #define TILES_RIGHT_PULLEY_WITH_ROPE     0x1d // Right Pulley with rope

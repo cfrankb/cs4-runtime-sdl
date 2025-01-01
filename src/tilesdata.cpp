@@ -8,7 +8,7 @@ const tiledef_t tileDefs[] = {
      {0x00, TYPE_WALLS, 0, 0, 0, 0, false, "Brick"},                        // 01 TILES_BRICK
      {0x00, TYPE_PLAYER, 0, 0, 0, 0, false, "Player"},                      // 02 TILES_PLAYER
      {0x00, TYPE_PICKUP, 20, 0, 0, 0, false, "Light Bulb"},                 // 03 TILES_LIGHT_BULB
-     {0x00, TYPE_PICKUP, 67, 10, 0, 0, false, "Orb"},                       // 04 TILES_ORB
+     {FLAG_EXTRA_LIFE, TYPE_PICKUP, 67, 10, 0, 0, false, "Orb"},            // 04 TILES_ORB
      {0x00, TYPE_PICKUP, 50, 0, 0, 0, false, "Chest"},                      // 05 TILES_CHEST
      {0x00, TYPE_DIAMOND, 10, 3, 0, 0, false, "Diamond"},                   // 06 TILES_DIAMOND
      {0x00, TYPE_PICKUP, 15, 8, 0, 0, false, "Neckless"},                   // 07 TILES_NECKLESS
@@ -16,8 +16,8 @@ const tiledef_t tileDefs[] = {
      {0x00, TYPE_PICKUP, 66, 0, 0, 0, false, "Tnt"},                        // 09 TILES_TNT
      {0x00, TYPE_PICKUP, 5, 2, 0, 0, false, "Flower"},                      // 0a TILES_FLOWER
      {0x00, TYPE_PICKUP, 5, 0, 0, 0, false, "Bottle of Oxygen"},            // 0b TILES_OXYGEN_BOTTLE
-     {0x00, TYPE_PICKUP, 99, 20, 0, 0, false, "TriForce"},                  // 0c TILES_TRIFORCE
-     {0x00, TYPE_PICKUP, 37, 0, 0, 0, false, "Shield"},                     // 0d TILES_SHIELD
+     {FLAG_EXTRA_SPEED, TYPE_PICKUP, 99, 20, 0, 0, false, "TriForce"},      // 0c TILES_TRIFORCE
+     {FLAG_GODMODE, TYPE_PICKUP, 37, 0, 0, 0, false, "Shield"},             // 0d TILES_SHIELD
      {0x00, TYPE_LADDER, 0, 0, 0, 0, false, "Ladder"},                      // 0e TILES_LADDER
      {0x00, TYPE_AUTO_ROPE, 0, 0, 0, 0, false, "LEFT Rope <- Pulley"},      // 0f TILES_LEFT_ROPE_PULLEY
      {0x00, TYPE_PULLEY, 0, 0, 0, 0, false, "LEFT Pulley (no rope)"},       // 10 TILES_LEFT_PULLEY
@@ -27,10 +27,10 @@ const tiledef_t tileDefs[] = {
      {0x00, TYPE_AUTO_ROPE, 0, 0, 0, 0, false, "RIGHT Pulley    Rope"},     // 14 TILES_RIGHT_ROPE
      {0x00, TYPE_SWITCH, 0, 0, 0, 0, false, "ELectric SWitch UP"},          // 15 TILES_SWITCH_UP
      {0x00, TYPE_SWITCH, 0, 0, 0, 0, false, "ELectric SWitch DN"},          // 16 TILES_SWITCH_DOWN
-     {0x00, TYPE_SOCKET, 0, 0, 0, 0, false, "Deadly Socket XXX"},           // 17 TILES_SOCKET_ON
-     {0x00, TYPE_SOCKET, 0, 0, 0, 0, false, "Light Bulb in Socket"},        // 18 TILES_LIGHTBULB_SOCKET_ON
-     {0x00, TYPE_SOCKET, 0, 0, 0, 0, false, "Unpowed Socket"},              // 19 TILES_SOCKET_OFF
-     {0x00, TYPE_SOCKET, 0, 0, 0, 0, false, "UNLighted Bulb in screw"},     // 1a TILES_LIGHTBULB_SOCKET_OFF
+     {0x00, TYPE_SOCKET, 0, 0, 0, 0, false, "Socket ON"},                   // 17 TILES_SOCKET_ON
+     {0x00, TYPE_SOCKET, 0, 0, 0, 0, false, "Light Bulb in Socket ON"},     // 18 TILES_LIGHTBULB_SOCKET_ON
+     {0x00, TYPE_SOCKET, 0, 0, 0, 0, false, "Socket OFF"},                  // 19 TILES_SOCKET_OFF
+     {0x00, TYPE_SOCKET, 0, 0, 0, 0, false, "Light Bulb in Socket OFF"},    // 1a TILES_LIGHTBULB_SOCKET_OFF
      {0x00, TYPE_PICKUP, 50, 0, 0, 0, false, "Magic Box"},                  // 1b TILES_MAGIC_BOX
      {0x00, TYPE_PULLEY, 0, 0, 0, 0, false, "Left Pulley with rope"},       // 1c TILES_LEFT_PULLEY_WITH_ROPE
      {0x00, TYPE_PULLEY, 0, 0, 0, 0, false, "Right Pulley with rope"},      // 1d TILES_RIGHT_PULLEY_WITH_ROPE
@@ -57,7 +57,7 @@ const tiledef_t tileDefs[] = {
      {0x00, TYPE_WALLS, 0, 0, 0, 0, false, "Rock #3"},                      // 32 TILES_ROCK_3
      {0x00, TYPE_WALLS, 0, 0, 0, 0, false, "Rock & NewPlant"},              // 33 TILES_ROCK_NEWPLANT
      {0x00, TYPE_BACKGROUND, 0, 0, 0, 0, false, "New Plant"},               // 34 TILES_NEW_PLANT
-     {0x00, TYPE_SPECIAL, 0, 0, 0, 0, false, "Breakable ROOT"},             // 35 TILES_BREAKABLE_ROOT
+     {0x00, TYPE_TRAP, 0, 0, 0, 0, false, "Breakable ROOT"},                // 35 TILES_BREAKABLE_ROOT
      {0x00, TYPE_ROOT, 0, 0, 0, 0, false, "ROOT"},                          // 36 TILES_ROOT
      {0x00, TYPE_BRIDGE, 0, 0, 0, 0, false, "BRIDGE & ROOT"},               // 37 TILES_BRIDGE_ROOT
      {0x00, TYPE_BRIDGE, 0, 0, 0, 0, false, "BRIDGE #0"},                   // 38 TILES_BRIDGE_0
@@ -78,22 +78,22 @@ const tiledef_t tileDefs[] = {
      {0x00, TYPE_TRAP, 0, 0, 0, 0, false, "Freeze Trap"},                   // 47 TILES_FREEZE_TRAP
      {0x00, TYPE_TRANS_SOURCE, 0, 0, 0, 0, false, "Transporter"},           // 48 TILES_TRANSPORTER
      {0x00, TYPE_TRANS_DEST, 0, 0, 0, 0, false, "Transporter's destination"},  // 49 TILES_TRANSPORTER_DEST
-     {0x00, TYPE_VAMPLANT, 0, 0, 0, 0, false, "Vampire Plant"},             // 4a TILES_VAMPLANT
-     {0x00, TYPE_DRONE, 0, 0, 0, 0, false, "Fish"},                         // 4b TILES_FISH
-     {0x00, TYPE_MONSTER, 0, 0, 0, 0, false, "Change Link"},                // 4c TILES_CHANGE_LINK
+     {0x00, TYPE_VAMPLANT, 0, -1, SPEED_NORMAL, AI_CLASSIC, false, "Vampire Plant"},  // 4a TILES_VAMPLANT
+     {0x00, TYPE_DRONE, 0, -2, SPEED_NORMAL, AI_CLASSIC, false, "Fish"},    // 4b TILES_FISH
+     {0x00, TYPE_MONSTER, 0, -5, SPEED_NORMAL, AI_CLASSIC, false, "Change Link"},  // 4c TILES_CHANGE_LINK
      {0x00, TYPE_UNUSED, 0, 0, 0, 0, false, "Boby of the worm"},            // 4d TILES_BOBY_OF_THE_WORM
-     {0x00, TYPE_PLATFORM, 0, 0, 0, 0, false, "Magic Platform UP/DN"},      // 4e TILES_PLATFORM_UP_DN
-     {0x00, TYPE_PLATFORM, 0, 0, 0, 0, false, "Magic Platform LF/RG"},      // 4f TILES_PLATFORM_LF_RG
-     {0x00, TYPE_MONSTER, 0, 0, 0, 0, false, "Dummy"},                      // 50 TILES_DUMMY
+     {0x00, TYPE_PLATFORM, 0, 0, SPEED_NORMAL, AI_CLASSIC, false, "Magic Platform UP/DN"},  // 4e TILES_PLATFORM_UP_DN
+     {0x00, TYPE_PLATFORM, 0, 0, SPEED_NORMAL, AI_CLASSIC, false, "Magic Platform LF/RG"},  // 4f TILES_PLATFORM_LF_RG
+     {0x00, TYPE_MONSTER, 0, -2, SPEED_NORMAL, AI_CLASSIC, false, "Dummy"},  // 50 TILES_DUMMY
      {0x00, TYPE_MONSTER, 0, 0, 0, 0, false, "Dummy on bridge"},            // 51 TILES_DUMMY_ON_BRIDGE
      {0x00, TYPE_MONSTER, 0, 0, 0, 0, false, "Dummy on ladder"},            // 52 TILES_DUMMY_ON_LADDER
-     {0x00, TYPE_MONSTER, 0, 0, 0, 0, false, "Gobblin"},                    // 53 TILES_GOBBLIN
+     {0x00, TYPE_MONSTER, 0, -3, SPEED_NORMAL, AI_CLASSIC, false, "Gobblin"},  // 53 TILES_GOBBLIN
      {0x00, TYPE_MONSTER, 0, 0, 0, 0, false, "Gobblin on bridge"},          // 54 TILES_GOBBLIN_ON_BRIDGE
      {0x00, TYPE_MONSTER, 0, 0, 0, 0, false, "Gobblin on ladder"},          // 55 TILES_GOBBLIN_ON_LADDER
-     {0x00, TYPE_MONSTER, 0, 0, 0, 0, false, "Teddy"},                      // 56 TILES_TEDDY
+     {0x00, TYPE_MONSTER, 0, -3, SPEED_NORMAL, AI_CLASSIC, false, "Teddy"},  // 56 TILES_TEDDY
      {0x00, TYPE_MONSTER, 0, 0, 0, 0, false, "Teddy on bridge"},            // 57 TILES_TEDDY_ON_BRIDGE
      {0x00, TYPE_MONSTER, 0, 0, 0, 0, false, "Teddy on ladder"},            // 58 TILES_TEDDY_ON_LADDER
-     {0x00, TYPE_MONSTER, 0, 0, 0, 0, false, "Octopus"},                    // 59 TILES_OCTOPUS
+     {0x00, TYPE_MONSTER, 0, -4, SPEED_NORMAL, AI_CLASSIC, false, "Octopus"},  // 59 TILES_OCTOPUS
      {0x00, TYPE_MONSTER, 0, 0, 0, 0, false, "Octopus on bridge"},          // 5a TILES_OCTOPUS_ON_BRIDGE
      {0x00, TYPE_MONSTER, 0, 0, 0, 0, false, "Octopus on ladder"},          // 5b TILES_OCTOPUS_ON_LADDER
 };

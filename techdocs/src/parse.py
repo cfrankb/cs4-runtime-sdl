@@ -5,6 +5,22 @@ const tiledef_t &getTileDef(int i)
 }
 '''
 
+class TileDef:
+    flag = '0x00'
+    type_name = ''
+    score = 0
+    hp = 0
+    speed = 0
+    ai = 0
+    hidden = False
+    basename = ''
+    tile_id = 0
+    def_name = ''
+
+    def to_string(self):
+        item_def = f'''{{{self.flag}, TYPE_{self.type_name}, {self.score}, {self.hp}, {self.speed}, {self.ai}, {'true' if self.hidden else 'false'}, "{self.basename}"}}, '''
+        return f'''     {item_def:70} // {self.tile_id:0>2x} {self.def_name}'''
+
 def get_pair(line:str) -> list[str]:
     pair = []
     for e in line.split(' '):
@@ -49,6 +65,8 @@ const tiledef_t & getTileDef(int i);
         'const tiledef_t tileDefs[] = {'
     ]
 
+    tile_defs = []
+    tiles = {}
     types = {}
     lines = []
     with open ('tiles.ini') as sfile:
@@ -69,7 +87,8 @@ const tiledef_t & getTileDef(int i);
             if section:
                 defines.append('')
             section = line[1:-1]
-            defines.append(f'// {section}')
+            if section != 'tiledefs':
+                defines.append(f'// {section}')
             i = 0
             continue
 
@@ -82,29 +101,43 @@ const tiledef_t & getTileDef(int i);
             prefix = def_name[0:len(section)]
             if prefix.upper() != section.upper():
                 def_name = f'{section.upper()}_{def_name}'
-            if len(pair) > 1:
-                i = int(pair[1], 16)
             if section == 'type':
                 types[def_name_raw] = 0
-            val = int(pair[1],16) if len(pair) >1 else i
             c = line.split('#',1)
             name = c[1].strip() if len(c) > 1 else ''
-            defines.append(f'#define {def_name:32} 0x{val:0>2x}' + (f' // {name}' if name else ''))
+            if section == 'tiledefs':
+                if def_name_raw not in tiles:
+                    print(f'missing tile {def_name_raw} in tiles on line {line_num}')
+                    continue
+                tile_id = tiles[def_name_raw]
+                for j in range(1, len(pair)):
+                    e = pair[j].split(':')
+                    if (len(e) != 2):
+                        print(f"missing pair value on line {line_num}")
+                        continue
+                    k,v= tuple(e)
+                    if v[0] == '-':
+                        value = v
+                    else:
+                        value = f'{k.upper()}_{v.upper()}'
+                    setattr(tile_defs[tile_id], k, value)
+            else:
+                if len(pair) > 1:
+                    i = int(pair[1], 16)
+                val = int(pair[1],16) if len(pair) >1 else i
+                defines.append(f'#define {def_name:32} 0x{val:0>2x}' + (f' // {name}' if name else ''))
             if section == 'tiles':
+                tiles[def_name] = val
                 score = 0
                 hp = 0
                 if len(pair) > 3:
                     for j in range(3, len(pair)):
-                        #print(j, len(pair))
                         if pair[j][0] == '+':
                            hp = int(pair[j][1:])
                         elif pair[j][0] == '-':
                            hp = int(pair[j])
                         elif pair[j][0] == '$':
                            score = int(pair[j][1:])
-                        elif pair[j][0] == ':':
-                            print("TODO: implement this")
-                            continue
                         else:
                             print(f'unknown param `${pair[j]}` on line ${line}')
                 if len(pair) > 2:
@@ -112,14 +145,22 @@ const tiledef_t & getTileDef(int i);
                     if type_name not in types:
                         print(f'type_name {type_name} on line {line_num} not found')
                     else:
-                       item_def = f'''{{0x00, TYPE_{type_name}, {score}, {hp}, 0, 0, false, "{name}"}}, '''
-                       data.append(f'''     {item_def:70} // {val:0>2x} {def_name}''')
+                        tile = TileDef()
+                        tile.type_name = type_name
+                        tile.score = score
+                        tile.hp = hp
+                        tile.basename = name
+                        tile.tile_id = val
+                        tile.def_name = def_name
+                        tile_defs.append(tile)
                 else:
                     print(f'warning: no type defined on line {line_num}')
-
             i += 1
         else:
             print(f'value no in section on line {line_num}')
+
+    for line in tile_defs:
+        data.append(line.to_string())
 
     with open('../../src/tilesdata.h', 'w') as tfile:
         tfile.write('\n'.join(defines))
