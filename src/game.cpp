@@ -21,11 +21,6 @@ CGame::CGame()
 
 CGame::~CGame()
 {
-    if (m_actors)
-    {
-        delete[] m_actors;
-        m_actors = nullptr;
-    }
 }
 
 void CGame::setLevel(int level)
@@ -73,20 +68,14 @@ void CGame::init()
 
 void CGame::addActor(const CActor &actor)
 {
-    if (m_actorCount != m_actorMax)
-    {
-        m_actors[m_actorCount++] = actor;
-        return;
-    }
-    printf("too many actors. limit reached.\n");
+    m_actors.push_back(actor);
 }
 
 bool CGame::initLevel()
 {
     m_goals = 0;
-    m_actorCount = 0;
+    m_actors.clear();
     bool playerFound = false;
-
     for (int y = 0; y < m_map.hei(); ++y)
     {
         for (int x = 0; x < m_map.len(); ++x)
@@ -183,8 +172,7 @@ bool CGame::initLevel()
     }
 
     printf("player found :%s\n", playerFound ? "true" : "false");
-    printf("monsters: %d\n", m_actorCount);
-
+    printf("monsters: %d\n", m_actors.size());
     return playerFound;
 }
 
@@ -258,6 +246,12 @@ void CGame::managePlayer(const uint8_t *joystate)
     }
 
     manageActionKeys(joystate);
+
+    if (m_player.canFall())
+    {
+        m_player.move(CActor::Down, false);
+        consume();
+    }
 }
 
 void CGame::manageHazards()
@@ -355,7 +349,7 @@ void CGame::manageActionKeys(const uint8_t *joystate)
 
     if (joystate[KILL_KEY])
     {
-        killPlayer();
+        m_hp = 0;
     }
 }
 
@@ -446,18 +440,18 @@ void CGame::manageMonsters(const uint32_t ticks)
 
     uint8_t dirs[] = {CActor::Up, CActor::Down, CActor::Left, CActor::Right};
     std::vector<CActor> newMonsters;
-
-    for (int i = 0; i < m_actorCount; ++i)
+    for (size_t i = 0; i < m_actors.size(); ++i)
     {
         CActor &actor = m_actors[i];
-        uint8_t cs = m_map.at(actor.x(), actor.y());
-        const tiledef_t &def = getTileDef(cs);
+        const tiledef_t &def = getTileDef(actor.tileID());
         if (!speeds[def.speed])
         {
             continue;
         }
+
         if (def.type == TYPE_MONSTER)
         {
+            // printf("id:%d type:%.2x s:%d tile:%.2x\n", i, def.type, def.speed, actor.tileID());
             if (actor.isPlayerThere(actor.aim()))
             {
                 // apply health damages
@@ -628,13 +622,12 @@ int CGame::godModeTimer()
     return 0;
 }
 
-void CGame::getMonsters(CActor *&monsters, int &count)
+const std::vector<CActor> &CGame::monsters() const
 {
-    monsters = m_actors;
-    count = m_actorCount;
+    return m_actors;
 }
 
-CActor &CGame::getMonster(int i)
+const CActor &CGame::getMonster(int i) const
 {
     return m_actors[i];
 }
@@ -890,7 +883,7 @@ bool CGame::hasKey(uint8_t c)
     return false;
 }
 
-Pos CGame::translate(const Pos &p, int aim)
+Pos CGame::translate(const Pos &p, const int aim) const
 {
     Pos t = p;
 

@@ -79,8 +79,8 @@ const tiledef_t & getTileDef(int i);
 #define ANIMZ_VAMPLANT                   0x0b // $1deadpl
 #define ANIMZ_VAMPLANT2                  0x0c // $2deadpl
 #define ANIMZ_PLATFORM                   0x0d // magicpla
-#define ANIMZ_RFISH                      0x0e // rfish
-#define ANIMZ_LFISH                      0x0f // lfish
+#define ANIMZ_LFISH                      0x0e // lfish
+#define ANIMZ_RFISH                      0x0f // rfish
 #define ANIMZ_DUMMY                      0x10 // $1dummy
 #define ANIMZ_DUMMY2                     0x11 // $1dummy
 #define ANIMZ_GOBBLIN                    0x12 // $1gobbli

@@ -280,6 +280,8 @@ void CGameMixin::drawScreen(CFrame &bitmap)
     CFrameSet &annie = *m_annie;
     bitmap.fill(BLACK);
 
+    ///////////////////////////////////////////////
+    // draw tiles
     uint8_t offset = m_animator->offset() & 1;
     for (int y = 0; y < rows; ++y)
     {
@@ -323,6 +325,7 @@ void CGameMixin::drawScreen(CFrame &bitmap)
         }
     }
 
+    //////////////////////////////////////////
     // draw player
     const CActor &player = game.player();
     CFrame *tile = annie[player.aim() * 8 + m_playerFrameOffset];
@@ -331,11 +334,10 @@ void CGameMixin::drawScreen(CFrame &bitmap)
              (player.y() - my) * TILE_SIZE, *tile,
              true);
 
+    ////////////////////////////////////////////
     // draw monsters
-    CActor *monsters;
-    int count;
-    game.getMonsters(monsters, count);
-    for (int i = 0; i < count; ++i)
+    const std::vector<CActor> &monsters = game.monsters();
+    for (int i = 0; i < monsters.size(); ++i)
     {
         const CActor &monster = monsters[i];
         if (monster.within(mx, my, mx + cols, my + rows))
@@ -343,7 +345,14 @@ void CGameMixin::drawScreen(CFrame &bitmap)
             // animations
             const int x = monster.x() - mx;
             const int y = monster.y() - my;
-            CFrame *tile = animz[m_animator->at(monster.tileID())];
+            int offset = 0;
+            if (monster.type() == TYPE_DRONE &&
+                monster.aim() == CActor::Right)
+            {
+                offset = 1;
+            }
+
+            CFrame *tile = animz[m_animator->at(monster.tileID()) + offset];
             drawTile(bitmap, x * TILE_SIZE, y * TILE_SIZE, *tile, true);
         }
     }
@@ -565,8 +574,7 @@ void CGameMixin::manageGamePlay()
         m_animator->animate();
     }
 
-    // not ready yet
-    // game.manageMonsters(m_ticks);
+    game.manageMonsters(m_ticks);
 
     if (game.isPlayerDead())
     {

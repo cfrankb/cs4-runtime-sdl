@@ -17,13 +17,15 @@ public:
     uint8_t tileID() const;
     void setAim(const uint8_t _aim);
     bool canMove(const int aim) const;
-    void move(const int aim);
+    bool canFall() const;
+    void move(const int aim, bool saveAim = true);
     inline bool within(const int x1, const int y1, const int x2, const int y2) const
     {
         return (m_x >= x1) && (m_x < x2) && (m_y >= y1) && (m_y < y2);
     }
     uint8_t findNextDir() const;
     bool isPlayerThere(const uint8_t aim) const;
+    bool isMonsterThere(const uint8_t aim) const;
     const Pos pos() const;
 
     enum
@@ -41,9 +43,11 @@ public:
 protected:
     enum
     {
-        FILTER_ATTR = 0x78, // STOP 00 01 02 etc
-        FLAG_HIDDEN = 0x80, // hide tile from engine
-        ATTR_STOP = 0x08,   // stop monsters
+        FILTER_ATTR = 0x78,   // STOP 00 01 02 etc
+        FLAG_HIDDEN = 0x80,   // hide tile from engine
+        ATTR_STOP = 0x08,     // stop monsters
+        FILTER_HAZARD = 0x03, // Water, Lava, Slime
+        ENV_WATER = 1,        // water
     };
 
     uint8_t m_x;      // x

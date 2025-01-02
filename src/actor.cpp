@@ -69,23 +69,83 @@ void CActor::setAim(const uint8_t _aim)
     m_aim = _aim;
 }
 
+bool CActor::canFall() const
+{
+    auto &game = *CGame::getGame();
+    CMap &map = game.map();
+    const uint8_t tileID = map.at(m_x, m_y);
+    const auto &def = getTileDef(tileID);
+    const uint8_t rawData = map.getAttr(m_x, m_y);
+    if ((rawData & FILTER_HAZARD) == ENV_WATER)
+    {
+        return false;
+    }
+    if (!(rawData & FLAG_HIDDEN) &&
+        (def.type == TYPE_LADDER ||
+         def.type == TYPE_BRIDGE ||
+         def.type == TYPE_ROOT ||
+         def.type == TYPE_PULLEY ||
+         def.type == TYPE_AUTO_ROPE ||
+         def.type == TYPE_SOCKET ||
+         def.type == TYPE_DOOR))
+    {
+        return false;
+    }
+
+    const Pos posU = game.translate(Pos{m_x, m_y}, Down);
+    const auto tileIDu = map.at(posU.x, posU.y);
+    const auto &defU = getTileDef(tileIDu);
+    const uint8_t rawDataU = map.getAttr(posU.x, posU.y);
+    if ((rawDataU & FILTER_HAZARD) == ENV_WATER)
+    {
+        return false;
+    }
+    if (!(rawDataU & FLAG_HIDDEN) &&
+        (defU.type == TYPE_DIAMOND ||
+         defU.type == TYPE_LADDER))
+    {
+        return false;
+    }
+    if (!canMove(Fall))
+    {
+        return false;
+    }
+
+    return true;
+}
+
 bool CActor::canMove(const int aim) const
 {
     auto &game = *CGame::getGame();
     CMap &map = game.map();
     const Pos &pos = Pos{m_x, m_y};
-    const Pos &newPos = game.translate(pos, aim);
+    const Pos &newPos = game.translate(pos, aim == Fall ? Down : aim);
     if (pos.x == newPos.x && pos.y == newPos.y)
     {
+        // translation failed assumes
         // invalid position outside of map
         return false;
     }
 
-    const uint8_t c = map.at(newPos.x, newPos.y);
-    const auto &def = getTileDef(c);
+    const uint8_t tileID = map.at(newPos.x, newPos.y);
+    const auto &def = getTileDef(tileID);
     const uint8_t rawData = map.getAttr(newPos.x, newPos.y);
     const uint8_t attr = rawData & FILTER_ATTR;
-    if (rawData & FLAG_HIDDEN)
+    if (m_type == TYPE_MONSTER && aim != Fall)
+    {
+        CActor tmp = *this;
+        tmp.move(aim);
+        if (tmp.canFall())
+        {
+            return false;
+        }
+    }
+
+    if (isMonsterThere(aim))
+    {
+        return true;
+    }
+    else if (rawData & FLAG_HIDDEN)
     {
         // ignore hidden tiles
         return true;
@@ -122,30 +182,31 @@ bool CActor::canMove(const int aim) const
         }
         else if (def.type == TYPE_DOOR)
         {
-            return game.hasKey(c - 1);
+            return game.hasKey(tileID - 1);
         }
-        else if (c >= TILES_MAX)
+        else if (tileID >= TILES_MAX)
         {
             // TODO: Revisit later
-            printf("undefined tile=%.2x type=%.2x\n", c, def.type);
+            printf("undefined tile=%.2x type=%.2x\n", tileID, def.type);
             return true;
         }
     }
     return false;
 }
 
-void CActor::move(const int aim)
+void CActor::move(const int aim, const bool saveAim)
 {
     auto &game = *CGame::getGame();
     CMap &map = game.map();
     uint8_t c = map.at(m_x, m_y);
-
     Pos pos{m_x, m_y};
     pos = game.translate(pos, aim);
     m_x = pos.x;
     m_y = pos.y;
-
-    m_aim = aim;
+    if (saveAim)
+    {
+        m_aim = aim;
+    }
 }
 
 uint8_t CActor::findNextDir() const
@@ -173,6 +234,20 @@ bool CActor::isPlayerThere(const uint8_t aim) const
     }
     const auto newPos = game.translate(Pos{m_x, m_y}, aim);
     return newPos.x == player.x() && newPos.y == player.y();
+}
+
+bool CActor::isMonsterThere(const uint8_t aim) const
+{
+    auto &game = *CGame::getGame();
+    auto &monsters = game.monsters();
+    const auto newPos = game.translate(Pos{m_x, m_y}, aim);
+    for (size_t i = 0; i < monsters.size(); ++i)
+    {
+        const CActor &actor = monsters[i];
+        if (newPos.x == actor.x() && newPos.y == actor.y())
+            return true;
+    }
+    return false;
 }
 
 const Pos CActor::pos() const

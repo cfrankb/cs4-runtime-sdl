@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <cstdio>
+#include <vector>
 
 #include "map.h"
 #include "maparch.h"
@@ -47,9 +48,9 @@ public:
     int godModeTimer();
     void managePlayer(const uint8_t *joyState);
     void manageMonsters(const uint32_t ticks);
-    void getMonsters(CActor *&monsters, int &count);
-    CActor &getMonster(int i);
-    Pos translate(const Pos &p, int aim);
+    const std::vector<CActor> &monsters() const;
+    const CActor &getMonster(const int i) const;
+    Pos translate(const Pos &p, int aim) const;
 
     enum GameMode
     {
@@ -124,10 +125,8 @@ private:
     int m_nextLife;
     int m_godModeTimer;
     int m_extraSpeedTimer;
-    CActor *m_actors = new CActor[MAX_ACTORS];
+    std::vector<CActor> m_actors;
     CActor m_player;
-    int m_actorMax = MAX_ACTORS;
-    int m_actorCount = 0;
     void addActor(const CActor &actor);
     CMap m_map;
 
