@@ -96,21 +96,23 @@ bool CActor::canFall() const
     const auto tileIDu = map.at(posU.x, posU.y);
     const auto &defU = getTileDef(tileIDu);
     const uint8_t rawDataU = map.getAttr(posU.x, posU.y);
-    if ((rawDataU & FILTER_HAZARD) == ENV_WATER)
+    if (rawDataU & ENV_FILTER == (ENV_WATER | BOTTOM_FILTER))
     {
         return false;
     }
     if (!(rawDataU & FLAG_HIDDEN) &&
         (defU.type == TYPE_DIAMOND ||
-         defU.type == TYPE_LADDER))
+         defU.type == TYPE_LADDER ||
+         defU.type == TYPE_WALLS ||
+         defU.type == TYPE_DOOR ||
+         defU.type == TYPE_SWITCH))
     {
         return false;
     }
-    if (!canMove(Fall))
+    else if (m_type == TYPE_PLAYER && isMonsterThere(Down))
     {
         return false;
     }
-
     return true;
 }
 
@@ -140,20 +142,19 @@ bool CActor::canMove(const int aim) const
             return false;
         }
     }
-
-    if (isMonsterThere(aim))
+    if (m_type == TYPE_PLAYER && isMonsterThere(aim))
     {
-        return true;
-    }
-    else if (rawData & FLAG_HIDDEN)
-    {
-        // ignore hidden tiles
-        return true;
+        return false;
     }
     else if ((m_type != TYPE_PLAYER) &&
              (aim != Fall) && (attr == ATTR_STOP))
     {
         return false;
+    }
+    else if (rawData & FLAG_HIDDEN)
+    {
+        // ignore hidden tiles
+        return true;
     }
     else if (def.type == TYPE_BACKGROUND ||
              def.type == TYPE_LADDER ||

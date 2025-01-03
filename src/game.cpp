@@ -258,8 +258,10 @@ void CGame::manageHazards()
 {
     const auto x = m_player.x();
     const auto y = m_player.y();
-    const auto env = m_map.getAttr(x, y) & FILTER_HAZARD;
-    if (env == ENV_WATER)
+    const auto rawData = m_map.getAttr(x, y);
+    const auto haz = m_map.getAttr(x, y) & FILTER_HAZARD;
+
+    if ((rawData & FILTER_ENV) == (ENV_WATER | ENV_BOTTOM))
     {
         // suffocate
         if (m_oxygen)
@@ -271,7 +273,7 @@ void CGame::manageHazards()
             --m_hp;
         }
     }
-    else if (env == ENV_SLIME || env == ENV_LAVA)
+    else if (haz == ENV_SLIME || haz == ENV_LAVA)
     {
         // instant death
         m_hp = 0;
@@ -508,11 +510,13 @@ void CGame::manageMonsters(const uint32_t ticks)
             {
                 aim = CActor::Left;
             }
+
             if (actor.isPlayerThere(actor.aim()))
             {
                 // apply health damages
                 addHealth(def.health);
             }
+
             if (actor.canMove(aim))
             {
                 actor.move(aim);
@@ -523,8 +527,58 @@ void CGame::manageMonsters(const uint32_t ticks)
             }
             actor.setAim(aim);
         }
-    }
+        else if (def.type == TYPE_PLATFORM)
+        {
+            uint8_t aim = actor.aim();
+            bool canMove = actor.canMove(aim);
+            if (actor.tileID() == TILES_PLATFORM_UP_DN)
+            {
+                aim &= 1;
+                if (aim == CActor::Up)
+                {
+                    if (actor.isPlayerThere(aim))
+                    {
+                        if (m_player.canMove(aim))
+                            m_player.move(CActor::Up);
+                        else
+                            m_hp = 0;
+                    }
+                }
+                else if (aim == CActor::Down && actor.canMove(CActor::Down))
+                {
+                    if (actor.isPlayerThere(CActor::Down))
+                    {
+                        m_player.move(CActor::Down);
+                    }
+                }
+            }
+            // left/right platform
+            else if (actor.tileID() == TILES_PLATFORM_LF_RG)
+            {
+                aim |= 2;
+                if (actor.isPlayerThere(CActor::Up) && canMove)
+                {
+                    if (m_player.canMove(aim))
+                    {
+                        m_player.move(aim, false);
+                    }
+                    else
+                    {
+                        m_hp = 0;
+                    }
+                }
+            }
 
+            if (canMove)
+            {
+                actor.move(aim);
+            }
+            else
+            {
+                actor.setAim(aim ^ 1);
+            }
+        }
+    }
     // moved here to avoid reallocation while using a reference
     for (auto const &monster : newMonsters)
     {
