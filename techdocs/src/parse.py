@@ -5,6 +5,22 @@ const tiledef_t &getTileDef(int i)
 }
 '''
 
+TILEDEF_STRUCT:str='''typedef struct
+{
+    uint8_t flags;
+    uint8_t type;
+    uint8_t score;
+    int8_t health;
+    uint8_t speed;
+    uint8_t ai;
+    bool hidden;
+    const char * basename;
+} tiledef_t;
+
+const tiledef_t & getTileDef(int i);
+
+'''
+
 class TileDef:
     flag = '0x00'
     type_name = ''
@@ -38,23 +54,9 @@ def main():
                '#include <stdint.h>'
                '',
                '#pragma once',
-               ''
+               '',
+               TILEDEF_STRUCT
                ]
-    defines.append('''typedef struct
-{
-    uint8_t flags;
-    uint8_t type;
-    uint8_t score;
-    int8_t health;
-    uint8_t speed;
-    uint8_t ai;
-    bool hidden;
-    const char * basename;
-} tiledef_t;
-
-const tiledef_t & getTileDef(int i);
-
-''')
 
     data = [
         '//////////////////////////////////////////////////',

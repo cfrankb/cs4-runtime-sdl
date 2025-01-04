@@ -161,11 +161,13 @@ bool CGame::initLevel()
                 m_map.at(x, y) = TILES_LADDER;
                 break;
             default:
-                // sanitize invalid tiles
                 if (tileID >= TILES_MAX)
                 {
-                    printf("invalid tile at (%d,%d) %.2x [attr:%.2x]\n", x, y, tileID, m_map.getAttr(x, y));
-                    m_map.at(x, y) = TILES_BLANK;
+                    // TODO: normalize tiledID inside map data
+                    // printf("invalid tile at (%d,%d) %.2x [attr:%.2x]\n", x, y, tileID, m_map.getAttr(x, y));
+                    m_map.at(x, y) = tileID ^ FLAG_HIDDEN;
+                    m_map.setAttr(x, y, m_map.getAttr(x, y) ^ FLAG_HIDDEN);
+                    printf("--> new tileId: %.2x (attr: %.2x)\n", m_map.at(x, y), m_map.getAttr(x, y));
                 }
             }
         }
@@ -232,6 +234,7 @@ void CGame::managePlayer(const uint8_t *joystate)
 {
     m_godModeTimer = std::max(m_godModeTimer - 1, 0);
     m_extraSpeedTimer = std::max(m_extraSpeedTimer - 1, 0);
+    const bool isFalling = m_player.canFall();
 
     manageHazards();
 
@@ -239,14 +242,13 @@ void CGame::managePlayer(const uint8_t *joystate)
     for (size_t i = 0; i < sizeof(aims); ++i)
     {
         uint8_t aim = aims[i];
+        if (isFalling && aim == CActor::Up)
+            continue;
         if (joystate[aim] && move(aim))
-        {
             break;
-        }
     }
 
     manageActionKeys(joystate);
-
     if (m_player.canFall())
     {
         m_player.move(CActor::Down, false);
@@ -290,22 +292,17 @@ void CGame::manageActionKeys(const uint8_t *joystate)
 {
     const auto x = m_player.x();
     const auto y = m_player.y();
-    const auto pu = m_map.at(x, y);
-    if (pu >= TILES_MAX)
-    {
-        // sanity check
-        return;
-    }
+    const auto tileID = m_map.at(x, y);
     auto const rawAttr = m_map.getAttr(x, y);
-    const tiledef_t &def = getTileDef(pu);
+    const tiledef_t &def = getTileDef(tileID);
     const auto attr = rawAttr & FILTER_ATTR;
     if (joystate[Z_KEY] && def.type == TYPE_SWITCH)
     {
-        if (pu == TILES_SWITCH_UP)
+        if (tileID == TILES_SWITCH_UP)
         {
             m_map.set(x, y, TILES_SWITCH_DOWN);
         }
-        else if (pu == TILES_SWITCH_DOWN)
+        else if (tileID == TILES_SWITCH_DOWN)
         {
             m_map.set(x, y, TILES_SWITCH_UP);
         }
@@ -316,7 +313,7 @@ void CGame::manageActionKeys(const uint8_t *joystate)
     }
     else if (joystate[Z_KEY] && def.type == TYPE_PULLEY)
     {
-        switch (pu)
+        switch (tileID)
         {
         case TILES_LEFT_PULLEY_WITH_ROPE:
             // with rope
@@ -388,8 +385,13 @@ void CGame::putRope(const uint8_t aim)
     const int8_t offset = (aim == CActor::Left ? -1 : 1);
     const auto x = m_player.x();
     const auto y = m_player.y();
-    for (uint8_t row = 0; m_map.at(x + offset, y + row) == TILES_BLANK; ++row)
+    for (uint8_t row = 0;
+         (m_map.at(x + offset, y + row) == TILES_BLANK) ||
+         (m_map.getAttr(x + offset, y + row) & FLAG_HIDDEN);
+         ++row)
     {
+        const auto attr = m_map.getAttr(x + offset, y + row) & FILTER_NO_HIDDEN;
+        m_map.setAttr(x + offset, y + row, attr);
         if (row == 0)
         {
             m_map.at(x + offset, y + row) = (aim == CActor::Left ? TILES_LEFT_ROPE_PULLEY : TILES_RIGHT_PULLEY_ROPE);
@@ -406,11 +408,7 @@ void CGame::breakBridge()
     const auto x = m_player.x();
     const auto y = m_player.y();
     const auto tileID = m_map.at(x, y);
-    if (tileID >= TILES_MAX)
-    {
-        // sanity check
-        return;
-    }
+
     auto const rawAttr = m_map.getAttr(x, y);
     if (rawAttr & FLAG_HIDDEN)
     {
@@ -697,10 +695,9 @@ void CGame::consume()
     const int y = m_player.y();
     const uint8_t pu = m_map.at(x, y);
     const uint8_t rawData = m_map.getAttr(x, y);
-    if (rawData & FLAG_HIDDEN || (pu >= TILES_MAX))
+    if (rawData & FLAG_HIDDEN)
     {
         // hidden tiles cannot be consumed
-        // invalid tiles should be ignored
         return;
     }
 
@@ -808,7 +805,9 @@ void CGame::consume()
         printf("attr : %.2x\n", attr);
     if (attr != 0 &&
         attr != ATTR_STOP &&
-        def.type != TYPE_SWITCH)
+        def.type != TYPE_SWITCH &&
+        def.type != TYPE_AUTO_ROPE &&
+        def.type != TYPE_KEY)
     {
         const uint8_t env = m_map.getAttr(x, y) & FILTER_ENV;
         m_map.setAttr(x, y, env);
@@ -885,11 +884,6 @@ int CGame::triggerFlip(const uint8_t attr)
         {
             const Pos pos = CMap::toPos(key);
             const uint8_t tileID = m_map.at(pos.x, pos.y);
-            if (tileID >= TILES_MAX)
-            {
-                // ignore invalid tile
-                continue;
-            }
             const auto &def = getTileDef(tileID);
             printf("-->found at x: %d y: %d type:%.2x attr %.2x\n",
                    pos.x, pos.y, def.type, rawData);

@@ -51,8 +51,8 @@ public:
     const Pos findFirst(uint8_t tileId);
     int count(uint8_t tileId);
     void clear(uint8_t ch = 0);
-    uint8_t getAttr(const uint8_t x, const uint8_t y);
-    void setAttr(const uint8_t x, const uint8_t y, const uint8_t a);
+    uint8_t getAttr(const int x, const int y);
+    void setAttr(const int x, const int y, const uint8_t a);
     int size();
     const char *lastError();
     CMap &operator=(const CMap &map);
@@ -80,7 +80,7 @@ public:
     void shift(int aim);
     void debug();
 
-    static uint16_t toKey(const uint8_t x, const uint8_t y);
+    static uint16_t toKey(const int x, const int y);
     static Pos toPos(const uint16_t key);
 
 protected:

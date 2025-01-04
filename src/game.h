@@ -99,15 +99,16 @@ private:
         MAX_HEALTH = 128,
         GODMODE_TIMER = 100,
         EXTRASPEED_TIMER = 100,
-        FILTER_ATTR = 0x78,   // STOP 00 01 02 etc
-        FILTER_ENV = 0x07,    // Water, Lava, Slime (including bottom)
-        FILTER_HAZARD = 0x03, // Water, Lava, Slime
-        FLAG_HIDDEN = 0x80,   // hide tile from engine
-        ENV_WATER = 1,        // water
-        ENV_LAVA = 2,         // lava
-        ENV_SLIME = 3,        // slime
-        ENV_BOTTOM = 4,       // bit on=botton, off=top (water, lava, slime)
-        ATTR_STOP = 0x08,     // stop monsters
+        FLAG_HIDDEN = 0x80,                    // hide tile from engine
+        FILTER_ATTR = 0x78,                    // STOP 00 01 02 etc
+        FILTER_ENV = 0x07,                     // Water, Lava, Slime (including bottom)
+        FILTER_HAZARD = 0x03,                  // Water, Lava, Slime
+        FILTER_NO_HIDDEN = 0xff ^ FLAG_HIDDEN, // remove hidden from raw
+        ENV_WATER = 1,                         // water
+        ENV_LAVA = 2,                          // lava
+        ENV_SLIME = 3,                         // slime
+        ENV_BOTTOM = 4,                        // bit on=botton, off=top (water, lava, slime)
+        ATTR_STOP = 0x08,                      // stop monsters
         LEVEL_BONUS = 500,
         OXYGEN_BONUS = 16,
         Z_KEY = 4,

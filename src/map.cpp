@@ -417,7 +417,7 @@ void CMap::clear(uint8_t ch)
     m_attrs.clear();
 }
 
-uint8_t CMap::getAttr(const uint8_t x, const uint8_t y)
+uint8_t CMap::getAttr(const int x, const int y)
 {
     const uint16_t key = toKey(x, y);
     if (m_attrs.size() > 0 && m_attrs.count(key) != 0)
@@ -430,7 +430,7 @@ uint8_t CMap::getAttr(const uint8_t x, const uint8_t y)
     }
 }
 
-void CMap::setAttr(const uint8_t x, const uint8_t y, const uint8_t a)
+void CMap::setAttr(const int x, const int y, const uint8_t a)
 {
     const uint16_t key = toKey(x, y);
     if (a == 0)
@@ -537,9 +537,9 @@ void CMap::shift(int aim)
     delete[] tmp;
 }
 
-uint16_t CMap::toKey(const uint8_t x, const uint8_t y)
+uint16_t CMap::toKey(const int x, const int y)
 {
-    return x + (y << 8);
+    return static_cast<uint8_t>(x) | (static_cast<uint8_t>(y) << 8);
 }
 
 Pos CMap::toPos(const uint16_t key)

@@ -303,12 +303,6 @@ void CGameMixin::drawScreen(CFrame &bitmap)
             }
             // draw tile
             CFrame *tile = nullptr;
-            if (tileID >= TILES_MAX)
-            {
-                // ignore invalid tiles
-                continue;
-            }
-
             if (tileID == TILES_DIAMOND ||
                 tileID == TILES_FORCE_FIELD ||
                 tileID == TILES_TRIFORCE ||
@@ -750,13 +744,12 @@ void CGameMixin::drawHelpScreen(CFrame &bitmap)
         "!====",
         "",
         "Use cursor keys to move.",
+        "Press Z to activate switches and use",
+        "ropes. Press ESCAPE to restart level.",
         "",
         "Collect all the diamonds to move to the",
         "next level. Avoid monsters and other",
         "hazards.",
-        "",
-        "Pick up objects to open up secret",
-        "passages.",
         "",
         "F1 Help",
         "F2 Restart Game",
