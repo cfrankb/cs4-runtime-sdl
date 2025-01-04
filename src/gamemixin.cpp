@@ -1,5 +1,5 @@
 /*
-    cs3-runtime-sdl
+    cs4-runtime-sdl
     Copyright (C) 2024  Francois Blanchette
 
     This program is free software: you can redistribute it and/or modify
