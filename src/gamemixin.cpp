@@ -744,8 +744,11 @@ void CGameMixin::drawHelpScreen(CFrame &bitmap)
         "!====",
         "",
         "Use cursor keys to move.",
+        "",
         "Press Z to activate switches and use",
-        "ropes. Press ESCAPE to restart level.",
+        "ropes. ",
+        "Press SPACE AND cursor key to Jump."
+        "Press ESCAPE to restart level.",
         "",
         "Collect all the diamonds to move to the",
         "next level. Avoid monsters and other",

@@ -38,7 +38,7 @@ namespace Jump
         DownRight,
         NoAim = 255,
         AimNone = 255,
-        JUMP_SEQ_MAX = 10
+        JUMP_SEQ_MAX = 6
     };
     struct jumpSeq_t
     {

@@ -59,7 +59,7 @@ python bin/gen.py emsdl
 
 '''.strip()
 
-EMS_NAME = 'cs4'
+EMS_NAME = 'cs4v2'
 SDL_NAME = 'cs4-sdl'
 DEBUG = False
 

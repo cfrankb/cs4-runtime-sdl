@@ -74,7 +74,7 @@ const tiledef_t tileDefs[] = {
      {0x00, TYPE_BRIDGE, 0, 0, 0, 0, false, "BRIDGE #11"},                  // 43 TILES_BRIDGE_11
      {0x00, TYPE_WALLS, 0, 0, 0, 0, false, "Force Field"},                  // 44 TILES_FORCE_FIELD
      {0x00, TYPE_STOP, 0, 0, 0, 0, false, "Stop"},                          // 45 TILES_STOP
-     {0x00, TYPE_TRAP, 0, 0, 0, 0, false, "Energy Drain Trap"},             // 46 TILES_ENERGY_DRAIN_TRAP
+     {0x00, TYPE_TRAP, 0, -12, 0, 0, false, "Energy Drain Trap"},           // 46 TILES_ENERGY_DRAIN_TRAP
      {0x00, TYPE_TRAP, 0, 0, 0, 0, false, "Freeze Trap"},                   // 47 TILES_FREEZE_TRAP
      {0x00, TYPE_TRANS_SOURCE, 0, 0, 0, 0, false, "Transporter"},           // 48 TILES_TRANSPORTER
      {0x00, TYPE_TRANS_DEST, 0, 0, 0, 0, false, "Transporter's destination"},  // 49 TILES_TRANSPORTER_DEST
