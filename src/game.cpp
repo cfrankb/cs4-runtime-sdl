@@ -24,6 +24,46 @@
 CGame *g_gamePrivate = nullptr;
 #define _same(_t, _v) static_cast<decltype(_t)>(_v)
 
+namespace Jump
+{
+    enum : uint8_t
+    {
+        Up,
+        Down,
+        Left,
+        Right,
+        UpLeft,
+        UpRight,
+        DownLeft,
+        DownRight,
+        NoAim = 255,
+        AimNone = 255,
+        JUMP_SEQ_MAX = 10
+    };
+    struct jumpSeq_t
+    {
+        const uint8_t seq[JUMP_SEQ_MAX];
+        const uint8_t count;
+        const uint8_t aim;
+        template <typename... T>
+        jumpSeq_t(const uint8_t _aim, T... _list) : seq{_list...}, aim{_aim}, count{sizeof...(T)}
+        {
+        }
+    };
+
+    const jumpSeq_t jumpSeqs[]{
+        {Up, Up, Up, Down, Down},               // Up
+        {Down},                                 // Down
+        {Left, Up, Left, Left, Down},           // Left
+        {Right, Up, Right, Right, Down},        // Right
+        {Left, Up, Up, Left, Down, Down},       // Up Left
+        {Right, Up, Up, Right, Down, Down},     // Up Right
+        {Left, Up, Left, Left, Left, Down},     // Down left
+        {Right, Up, Right, Right, Right, Down}, // down right
+    };
+
+};
+
 CGame::CGame()
 {
     m_hp = DEFAULT_HP;
@@ -70,6 +110,7 @@ bool CGame::loadLevel(bool restart)
     m_ropes = 0;
     m_bulbs = 0;
     memset(m_keys, 0, sizeof(m_keys));
+    memset(&m_jump, 0, sizeof(m_jump));
     return initLevel();
 }
 
@@ -253,6 +294,10 @@ void CGame::managePlayer(const uint8_t *joystate)
     const bool isFalling = m_player.canFall();
 
     manageHazards();
+    if (manageJump(joystate))
+    {
+        return;
+    }
 
     uint8_t aims[] = {CActor::Up, CActor::Down, CActor::Left, CActor::Right};
     for (size_t i = 0; i < sizeof(aims); ++i)
@@ -445,6 +490,82 @@ void CGame::breakBridge()
     }
 }
 
+bool CGame::manageJump(const uint8_t *joyState)
+{
+    if (m_jump.cooldown)
+    {
+        --m_jump.cooldown;
+        return false;
+    }
+
+    if (m_jump.flag)
+    {
+        const uint8_t &aim = Jump::jumpSeqs[m_jump.seq].seq[m_jump.index];
+        if (m_player.canMove(aim))
+        {
+            m_player.move(aim, false);
+            consume();
+        }
+        else
+        {
+            m_jump.flag = false;
+        }
+        ++m_jump.index;
+        if (m_jump.index >= Jump::jumpSeqs[m_jump.seq].count)
+        {
+            m_jump.flag = false;
+        }
+        if (!m_jump.flag)
+        {
+            m_jump.cooldown = DEFAULT_JUMP_COOLDOWN;
+        }
+    }
+    else
+    {
+        if (joyState[BUTTON])
+        {
+            m_jump.index = 0;
+            uint8_t newAim = Jump::NoAim;
+            if (joyState[Jump::Up] && joyState[Jump::Left])
+            {
+                newAim = Jump::UpLeft;
+            }
+            else if (joyState[Jump::Up] && joyState[Jump::Right])
+            {
+                newAim = Jump::UpRight;
+            }
+            else if (joyState[Jump::Down] && joyState[Jump::Left])
+            {
+                newAim = Jump::DownLeft;
+            }
+            else if (joyState[Jump::Down] && joyState[Jump::Right])
+            {
+                newAim = Jump::DownRight;
+            }
+            else
+            {
+                const uint8_t aims[] = {Jump::Up, Jump::Left, Jump::Right};
+                for (int i = 0; i < sizeof(aims); ++i)
+                {
+                    const int aim = aims[i];
+                    if (joyState[aim])
+                    {
+                        newAim = aim;
+                        break;
+                    }
+                }
+            }
+            if (newAim != Jump::NoAim)
+            {
+                m_player.setAim(Jump::jumpSeqs[newAim].aim);
+                m_jump.flag = true;
+                m_jump.seq = newAim;
+            }
+        }
+    }
+    return m_jump.flag;
+}
+
 void CGame::manageMonsters(const uint32_t ticks)
 {
     const int speedCount = 9;
@@ -467,7 +588,6 @@ void CGame::manageMonsters(const uint32_t ticks)
 
         if (def.type == TYPE_MONSTER)
         {
-            // printf("id:%d type:%.2x s:%d tile:%.2x\n", i, def.type, def.speed, actor.tileID());
             if (actor.isPlayerThere(actor.aim()))
             {
                 // apply health damages

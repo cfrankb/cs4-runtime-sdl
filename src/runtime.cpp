@@ -173,6 +173,9 @@ void CRuntime::doInput()
             case SDLK_z:
                 m_joyState[Z_KEY] = keyState;
                 continue;
+            case SDLK_SPACE:
+                m_joyState[BUTTON] = keyState;
+                continue;
             case SDLK_ESCAPE:
                 m_joyState[KILL_KEY] = keyState;
                 continue;

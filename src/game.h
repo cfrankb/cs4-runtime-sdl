@@ -23,10 +23,6 @@
 #include "maparch.h"
 #include "actor.h"
 
-class CFrameSet;
-class CFrame;
-class CMapArch;
-
 #pragma once
 
 class CGame
@@ -97,18 +93,25 @@ private:
     void putRope(const uint8_t aim);
     void takeRope(const uint8_t aim);
     void breakBridge();
+    void addActor(const CActor &actor);
+    bool manageJump(const uint8_t *joyState);
+
+    struct jump_t
+    {
+        bool flag;
+        int seq;
+        int index;
+        int cooldown;
+    };
 
     enum : int
     {
-        MAX_ACTORS = 64,
-        GROW_BY = 8,
         TILE_SIZE = 16,
-        WIDTH = 320,
-        HEIGHT = 240,
         DEFAULT_PLAYER_SPEED = 3,
         DEFAULT_LIVES = 5,
         DEFAULT_HP = 64,
         DEFAULT_OXYGEN = 32,
+        DEFAULT_JUMP_COOLDOWN = 5,
         SCORE_LIFE = 5000,
         MAX_OXYGEN = 128,
         MAX_KEYS = 6,
@@ -126,10 +129,11 @@ private:
         ENV_SLIME = 3,                         // slime
         ENV_BOTTOM = 4,                        // bit on=botton, off=top (water, lava, slime)
         ATTR_STOP = 0x08,                      // stop monsters
-        LEVEL_BONUS = 500,
-        OXYGEN_BONUS = 16,
+        LEVEL_BONUS = 900,
+        OXYGEN_BONUS = 32,
         Z_KEY = 4,
         KILL_KEY = 5,
+        BUTTON = 6,
     };
 
     int m_mode;
@@ -146,10 +150,9 @@ private:
     int m_extraSpeedTimer;
     std::vector<CActor> m_actors;
     CActor m_player;
-    void addActor(const CActor &actor);
     CMap m_map;
-
+    jump_t m_jump;
+    uint8_t m_keys[MAX_KEYS];
     IndexVector m_mapIndex;
     std::string m_mapArch;
-    uint8_t m_keys[MAX_KEYS];
 };

@@ -137,6 +137,7 @@ protected:
         AIM_RIGHT,
         Z_KEY,
         KILL_KEY,
+        BUTTON,
         ButtonCount
     };
 

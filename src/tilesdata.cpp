@@ -81,7 +81,7 @@ const tiledef_t tileDefs[] = {
      {0x00, TYPE_VAMPLANT, 0, -1, SPEED_NORMAL, AI_CLASSIC, false, "Vampire Plant"},  // 4a TILES_VAMPLANT
      {0x00, TYPE_DRONE, 0, -2, SPEED_SLOW, AI_CLASSIC, false, "Fish"},      // 4b TILES_FISH
      {0x00, TYPE_MONSTER, 0, -5, SPEED_NORMAL, AI_CLASSIC, false, "Change Link"},  // 4c TILES_CHANGE_LINK
-     {0x00, TYPE_UNUSED, 0, 0, 0, 0, false, "Boby of the worm"},            // 4d TILES_BOBY_OF_THE_WORM
+     {0x00, TYPE_UNUSED, 0, 0, 0, 0, true, "Boby of the worm"},             // 4d TILES_BOBY_OF_THE_WORM
      {0x00, TYPE_PLATFORM, 0, 0, SPEED_VERYSLOW, 0, false, "Magic Platform UP/DN"},  // 4e TILES_PLATFORM_UP_DN
      {0x00, TYPE_PLATFORM, 0, 0, SPEED_VERYSLOW, 0, false, "Magic Platform LF/RG"},  // 4f TILES_PLATFORM_LF_RG
      {0x00, TYPE_MONSTER, 0, -2, SPEED_SLOW, AI_CLASSIC, false, "Dummy"},   // 50 TILES_DUMMY
