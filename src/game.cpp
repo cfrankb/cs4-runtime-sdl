@@ -41,8 +41,8 @@ namespace Jump
     struct jumpSeq_t
     {
         const uint8_t seq[JUMP_SEQ_MAX];
-        const uint8_t count;
         const uint8_t aim;
+        const uint8_t count;
         template <typename... T>
         jumpSeq_t(const uint8_t _aim, T... _list) : seq{_list...}, aim{_aim}, count{sizeof...(T)}
         {
@@ -88,19 +88,25 @@ bool CGame::loadLevel(bool restart)
     printf("loading level: %d ...\n", m_level + 1);
     setMode(restart ? MODE_RESTART : MODE_INTRO);
 
-    const auto levelCount = m_mapIndex.size();
-    const int offset = m_mapIndex[m_level % levelCount];
-    FILE *sfile = fopen(m_mapArch.c_str(), "rb");
-    if (sfile)
-    {
-        fseek(sfile, offset, SEEK_SET);
-        m_map.read(sfile);
-        fclose(sfile);
-    }
-    else
-    {
-        printf("couldn't open %s\n", m_mapArch.c_str());
-        return false;
+    const auto levelCount =  m_mapArchLocal ? m_mapArchLocal->size() :  m_mapIndex.size();
+    if (m_mapArchLocal == nullptr) {
+        // load level from disk
+        const int offset = m_mapIndex[m_level % levelCount];
+        FILE *sfile = fopen(m_mapArch.c_str(), "rb");
+        if (sfile)
+        {
+            fseek(sfile, offset, SEEK_SET);
+            m_map.read(sfile);
+            fclose(sfile);
+        }
+        else
+        {
+            printf("couldn't open %s\n", m_mapArch.c_str());
+            return false;
+        }
+    } else {
+        // level already in memory
+        m_map = *m_mapArchLocal->at(m_level % levelCount);
     }
 
     m_hp = DEFAULT_HP;
@@ -137,7 +143,6 @@ bool CGame::initLevel()
         for (int x = 0; x < m_map.len(); ++x)
         {
             const auto &tileID = m_map.at(x, y);
-            const auto &attr = m_map.getAttr(x, y);
             switch (tileID)
             {
             case TILES_PLAYER:
@@ -220,8 +225,8 @@ bool CGame::initLevel()
                 if (tileID >= TILES_MAX)
                 {
                     // TODO: normalize tiledID inside map data
-                    // m_map.at(x, y) = tileID ^ FLAG_HIDDEN;
-                    //   m_map.setAttr(x, y, m_map.getAttr(x, y) ^ FLAG_HIDDEN);
+                    m_map.at(x, y) = tileID ^ FLAG_HIDDEN;
+                    m_map.setAttr(x, y, m_map.getAttr(x, y) ^ FLAG_HIDDEN);
                     printf("--> new tileId at (%d,%d): %.2x (attr: %.2x)\n", x, y, m_map.at(x, y), m_map.getAttr(x, y));
                 }
             }
@@ -229,7 +234,7 @@ bool CGame::initLevel()
     }
 
     printf("player found :%s\n", playerFound ? "true" : "false");
-    printf("monsters: %d\n", m_actors.size());
+    printf("monsters: %lu\n", m_actors.size());
     return playerFound;
 }
 
@@ -245,8 +250,11 @@ int CGame::mode()
 
 void CGame::nextLevel()
 {
+    printf("current Level: %d", m_level+1);
     addPoints(LEVEL_BONUS + m_hp);
-    if (m_level != m_mapIndex.size() - 1)
+
+    const auto levelCount =  m_mapArchLocal ? m_mapArchLocal->size() - 1 : m_mapIndex.size() - 1;
+    if (m_level != levelCount)
     {
         ++m_level;
     }
@@ -254,6 +262,7 @@ void CGame::nextLevel()
     {
         m_level = 0;
     }
+    printf("NextLevel: %d", m_level+1);
 }
 
 void CGame::restartGame()
@@ -271,6 +280,11 @@ bool CGame::setMapArch(const std::string &maparch)
 {
     m_mapArch = maparch;
     return CMapArch::indexFromFile(m_mapArch.c_str(), m_mapIndex);
+}
+
+void CGame::setMapArch(CMapArch *maparch)
+{
+    m_mapArchLocal = maparch;
 }
 
 bool CGame::move(const int aim)
@@ -385,7 +399,6 @@ void CGame::manageActionKeys(const uint8_t *joystate)
             ++m_ropes;
             takeRope(CActor::Right);
             break;
-
         case TILES_LEFT_PULLEY:
             // no rope
             if (m_ropes)
@@ -474,7 +487,7 @@ void CGame::breakBridge()
         return;
     }
     const tiledef_t &def = getTileDef(tileID);
-    if (!def.type == TYPE_BRIDGE || tileID != TILES_BRIDGE_0)
+    if (def.type != TYPE_BRIDGE || tileID != TILES_BRIDGE_0)
     {
         return;
     }
@@ -543,7 +556,7 @@ bool CGame::manageJump(const uint8_t *joyState)
             else
             {
                 const uint8_t aims[] = {Jump::Up, Jump::Left, Jump::Right};
-                for (int i = 0; i < sizeof(aims); ++i)
+                for (size_t i = 0; i < sizeof(aims); ++i)
                 {
                     const int aim = aims[i];
                     if (joyState[aim])

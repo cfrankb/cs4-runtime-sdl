@@ -113,7 +113,7 @@ bool CActor::canFall() const
     const auto tileIDu = map.at(posU.x, posU.y);
     const auto &defU = getTileDef(tileIDu);
     const uint8_t rawDataU = map.getAttr(posU.x, posU.y);
-    if (rawDataU & ENV_FILTER == (ENV_WATER | BOTTOM_FILTER))
+    if ((rawDataU & ENV_FILTER) == (ENV_WATER | BOTTOM_FILTER))
     {
         return false;
     }
@@ -215,8 +215,6 @@ bool CActor::canMove(const int aim) const
 void CActor::move(const int aim, const bool saveAim)
 {
     auto &game = *CGame::getGame();
-    CMap &map = game.map();
-    uint8_t c = map.at(m_x, m_y);
     Pos pos{m_x, m_y};
     pos = game.translate(pos, aim);
     m_x = pos.x;

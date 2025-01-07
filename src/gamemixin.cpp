@@ -331,7 +331,7 @@ void CGameMixin::drawScreen(CFrame &bitmap)
     ////////////////////////////////////////////
     // draw monsters
     const std::vector<CActor> &monsters = game.monsters();
-    for (int i = 0; i < monsters.size(); ++i)
+    for (size_t i = 0; i < monsters.size(); ++i)
     {
         const CActor &monster = monsters[i];
         if (monster.within(mx, my, mx + cols, my + rows))
@@ -637,9 +637,25 @@ void CGameMixin::init(const std::string &maparch, const int index)
         return;
     }
     m_game->setLevel(index);
-    // sanityTest();
+    sanityTest();
     m_countdown = INTRO_DELAY;
     m_game->loadLevel(false);
+}
+
+void CGameMixin::init(CMapArch* maparch, const int index)
+{
+    if (!m_assetPreloaded)
+    {
+        preloadAssets();
+        m_assetPreloaded = true;
+    }
+
+    m_game->setMapArch(maparch);
+    m_game->setLevel(index);
+    sanityTest();
+    m_countdown = INTRO_DELAY;
+    m_game->loadLevel(false);
+
 }
 
 void CGameMixin::changeZoom()
@@ -704,7 +720,7 @@ void CGameMixin::drawScores(CFrame &bitmap)
     drawFont(bitmap, x, y * FONT_SIZE, t, WHITE);
     y += 2;
 
-    for (uint32_t i = 0; i < MAX_SCORES; ++i)
+    for (uint i = 0; i < MAX_SCORES; ++i)
     {
         uint32_t color = i & INTERLINES ? CYAN : BLUE;
         if (m_recordScore && m_scoreRank == i)
@@ -747,7 +763,7 @@ void CGameMixin::drawHelpScreen(CFrame &bitmap)
         "",
         "Press Z to activate switches and use",
         "ropes. ",
-        "Press SPACE AND cursor key to Jump."
+        "Press SPACE AND cursor key to Jump.",
         "Press ESCAPE to restart level.",
         "",
         "Collect all the diamonds to move to the",
