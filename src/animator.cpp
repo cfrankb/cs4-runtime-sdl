@@ -86,6 +86,16 @@ const CAnimator::animzSeq_t animzTileSeq[] = {
         ANIMZ_ORB,
         4,
     },
+    {
+        TILES_TRANSPORTER,
+        ANIMZ_TRANS,
+        2,
+    },
+    {
+        TILES_TRANSPORTER_DEST,
+        ANIMZ_TRANS,
+        2,
+    },
 };
 
 CAnimator::CAnimator()

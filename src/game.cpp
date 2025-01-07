@@ -18,8 +18,6 @@
 #include "game.h"
 #include <cstring>
 #include "tilesdata.h"
-#include "shared/Frame.h"
-#include "shared/FrameSet.h"
 
 CGame *g_gamePrivate = nullptr;
 #define _same(_t, _v) static_cast<decltype(_t)>(_v)
@@ -222,8 +220,8 @@ bool CGame::initLevel()
                 if (tileID >= TILES_MAX)
                 {
                     // TODO: normalize tiledID inside map data
-                    m_map.at(x, y) = tileID ^ FLAG_HIDDEN;
-                    m_map.setAttr(x, y, m_map.getAttr(x, y) ^ FLAG_HIDDEN);
+                    // m_map.at(x, y) = tileID ^ FLAG_HIDDEN;
+                    //   m_map.setAttr(x, y, m_map.getAttr(x, y) ^ FLAG_HIDDEN);
                     printf("--> new tileId at (%d,%d): %.2x (attr: %.2x)\n", x, y, m_map.at(x, y), m_map.getAttr(x, y));
                 }
             }
@@ -943,6 +941,7 @@ void CGame::consume()
         attr != ATTR_STOP &&
         def.type != TYPE_SWITCH &&
         def.type != TYPE_AUTO_ROPE &&
+        def.type != TYPE_LADDER &&
         def.type != TYPE_KEY)
     {
         const uint8_t env = m_map.getAttr(x, y) & FILTER_ENV;

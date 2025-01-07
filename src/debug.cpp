@@ -20,6 +20,7 @@
 #include "shared/Frame.h"
 #include "maparch.h"
 #include "map.h"
+#include "tilesdata.h"
 #include <cstdio>
 #include <cstring>
 
@@ -29,6 +30,7 @@
 #define TILE_SIZE 16
 #define TILE_BYTES (TILE_SIZE * TILE_SIZE)
 #define MAIN_ARCH_FILE "data/levels.mapz-cs4"
+#define CLEAN_ARCH_FILE "data/levels0.mapz-cs4"
 #define CS4_TILES "data/cs4tiles.obl"
 #define CS4_EDIT "data/cs4edit.obl"
 #define CS4_ANIMZ "data/cs4animz.obl"
@@ -220,8 +222,15 @@ bool generateScreenshots()
     return true;
 }
 
-bool createArchive()
+bool createLevelArchive()
 {
+    enum
+    {
+        FLAG_HIDDEN = 0x80,
+        FILTER_TILE = 0x7f,
+        FILTER_ENV = 0x07,
+    };
+
     const uint16_t mapLen = 128;
     const uint16_t mapHei = 64;
 
@@ -257,6 +266,34 @@ bool createArchive()
                 if (c)
                 {
                     map->setAttr(x, y, c);
+                }
+
+                uint8_t tileID = map->at(x, y);
+                uint8_t attr = map->getAttr(x, y);
+                if ((attr & FLAG_HIDDEN) != 0)
+                {
+                    // remove FlagHidden from legacy rawData
+                    map->setAttr(x, y, attr & FILTER_TILE);
+                }
+
+                if ((tileID & FLAG_HIDDEN) != 0)
+                {
+                    // apply hidden flag to TileID over 0x80
+                    auto newTileID = tileID & FILTER_TILE;
+                    if (newTileID == TILES_DIAMOND)
+                    {
+                        newTileID = TILES_BLANK;
+                    }
+                    else if (newTileID >= TILES_MAX)
+                    {
+                        printf("invalid tile:%.2x\n", newTileID);
+                        newTileID = TILES_BLANK;
+                    }
+                    map->at(x, y) = newTileID;
+                    if (newTileID)
+                        map->setAttr(x, y, attr | FLAG_HIDDEN);
+                    else
+                        map->setAttr(x, y, attr & FILTER_ENV);
                 }
             }
         }
@@ -321,5 +358,5 @@ void generateData()
     convert("techdocs/data/cs4edit.mcg", CS4_EDIT);
     convert("techdocs/data/cs4graph.mcg", CS4_TILES);
     convert("techdocs/data/cs4num.mcg", CS4_NUM);
-    createArchive();
+    createLevelArchive();
 }
