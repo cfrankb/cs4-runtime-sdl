@@ -60,10 +60,14 @@ CGameMixin::~CGameMixin()
         delete m_animator;
     }
 
+#ifndef QT_CORE_LIB
+    // sigleton shouldn't be deleted in multiuse
+    // environmnent
     if (m_game)
     {
         delete m_game;
     }
+#endif
 
     if (m_tiles)
     {
@@ -544,7 +548,7 @@ void CGameMixin::manageGamePlay()
         return;
     }
 
-    if (m_ticks % game.playerSpeed() == 0 && !game.isPlayerDead())
+    if ((m_ticks % game.playerSpeed()) == 0 && !game.isPlayerDead())
     {
         game.managePlayer(m_joyState);
         m_joyState[Z_KEY] = 0;
@@ -642,7 +646,7 @@ void CGameMixin::init(const std::string &maparch, const int index)
     m_game->loadLevel(false);
 }
 
-void CGameMixin::init(CMapArch* maparch, const int index)
+void CGameMixin::init(CMapArch *maparch, const int index)
 {
     if (!m_assetPreloaded)
     {
@@ -655,7 +659,6 @@ void CGameMixin::init(CMapArch* maparch, const int index)
     sanityTest();
     m_countdown = INTRO_DELAY;
     m_game->loadLevel(false);
-
 }
 
 void CGameMixin::changeZoom()

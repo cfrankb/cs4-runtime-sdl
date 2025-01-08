@@ -18,6 +18,10 @@
 #include "game.h"
 #include <cstring>
 #include "tilesdata.h"
+#if defined(QT_CORE_LIB)
+#include <QDebug>
+#define printf qDebug
+#endif
 
 CGame *g_gamePrivate = nullptr;
 #define _same(_t, _v) static_cast<decltype(_t)>(_v)

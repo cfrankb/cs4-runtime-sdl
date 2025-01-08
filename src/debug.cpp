@@ -289,8 +289,18 @@ bool createLevelArchive()
                         printf("invalid tile:%.2x\n", newTileID);
                         newTileID = TILES_BLANK;
                     }
+                    else
+                    {
+                        const auto &def = getTileDef(newTileID);
+                        if (def.type == TYPE_MONSTER ||
+                            def.type == TYPE_PICKUP ||
+                            def.type == TYPE_TRAP)
+                        {
+                            newTileID = TILES_BLANK;
+                        }
+                    }
                     map->at(x, y) = newTileID;
-                    if (newTileID)
+                    if (newTileID != TILES_BLANK)
                         map->setAttr(x, y, attr | FLAG_HIDDEN);
                     else
                         map->setAttr(x, y, attr & FILTER_ENV);

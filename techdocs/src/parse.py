@@ -123,17 +123,20 @@ def main():
                     else:
                         value = f'{k.upper()}_{v.upper()}'
                     setattr(tile_defs[tile_id], k, value)
+                continue
+            if len(pair) > 1 and len(pair[1]) == 2 :
+                k = 2
+                val = int(pair[1],16)
             else:
-                if len(pair) > 1:
-                    i = int(pair[1], 16)
-                val = int(pair[1],16) if len(pair) >1 else i
-                defines.append(f'#define {def_name:32} 0x{val:0>2x}' + (f' // {name}' if name else ''))
+                k = 1
+                val = i
+            defines.append(f'#define {def_name:32} 0x{val:0>2x}' + (f' // {name}' if name else ''))
             if section == 'tiles':
                 tiles[def_name] = val
                 score = 0
                 hp = 0
-                if len(pair) > 3:
-                    for j in range(3, len(pair)):
+                if len(pair) > k + 1:
+                    for j in range(k + 1, len(pair)):
                         if pair[j][0] == '+':
                            hp = int(pair[j][1:])
                         elif pair[j][0] == '-':
@@ -142,8 +145,8 @@ def main():
                            score = int(pair[j][1:])
                         else:
                             print(f'unknown param `${pair[j]}` on line ${line}')
-                if len(pair) > 2:
-                    type_name = pair[2]
+                if len(pair) > k:
+                    type_name = pair[k]
                     if type_name not in types:
                         print(f'type_name {type_name} on line {line_num} not found')
                     else:
