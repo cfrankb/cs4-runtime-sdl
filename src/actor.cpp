@@ -270,3 +270,15 @@ const Pos CActor::pos() const
 {
     return Pos{m_x, m_y};
 }
+
+void CActor::setPos(const uint8_t x, const uint8_t y)
+{
+    m_x = x;
+    m_y = y;
+}
+
+void CActor::setPos(const Pos &pos)
+{
+    m_x = pos.x;
+    m_y = pos.y;
+}

@@ -29,6 +29,8 @@ public:
     void setX(const uint8_t _x);
     uint8_t y() const;
     void setY(const uint8_t _y);
+    void setPos(const uint8_t x, const uint8_t y);
+    void setPos(const Pos &pos);
     uint8_t aim() const;
     uint8_t type() const;
     uint8_t tileID() const;

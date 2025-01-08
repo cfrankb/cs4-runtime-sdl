@@ -88,8 +88,9 @@ bool CGame::loadLevel(bool restart)
     printf("loading level: %d ...\n", m_level + 1);
     setMode(restart ? MODE_RESTART : MODE_INTRO);
 
-    const auto levelCount =  m_mapArchLocal ? m_mapArchLocal->size() :  m_mapIndex.size();
-    if (m_mapArchLocal == nullptr) {
+    const auto levelCount = m_mapArchLocal ? m_mapArchLocal->size() : m_mapIndex.size();
+    if (m_mapArchLocal == nullptr)
+    {
         // load level from disk
         const int offset = m_mapIndex[m_level % levelCount];
         FILE *sfile = fopen(m_mapArch.c_str(), "rb");
@@ -104,7 +105,9 @@ bool CGame::loadLevel(bool restart)
             printf("couldn't open %s\n", m_mapArch.c_str());
             return false;
         }
-    } else {
+    }
+    else
+    {
         // level already in memory
         m_map = *m_mapArchLocal->at(m_level % levelCount);
     }
@@ -250,10 +253,8 @@ int CGame::mode()
 
 void CGame::nextLevel()
 {
-    printf("current Level: %d", m_level+1);
     addPoints(LEVEL_BONUS + m_hp);
-
-    const auto levelCount =  m_mapArchLocal ? m_mapArchLocal->size() - 1 : m_mapIndex.size() - 1;
+    const auto levelCount = m_mapArchLocal ? m_mapArchLocal->size() - 1 : m_mapIndex.size() - 1;
     if (m_level != levelCount)
     {
         ++m_level;
@@ -262,7 +263,6 @@ void CGame::nextLevel()
     {
         m_level = 0;
     }
-    printf("NextLevel: %d", m_level+1);
 }
 
 void CGame::restartGame()
@@ -431,7 +431,7 @@ void CGame::takeRope(const uint8_t aim)
     const auto y = m_player.y();
     for (uint8_t row = 0;; ++row)
     {
-        uint expectedTile;
+        uint8_t expectedTile;
         if (row == 0)
         {
             expectedTile = (aim == CActor::Left ? TILES_LEFT_ROPE_PULLEY : TILES_RIGHT_PULLEY_ROPE);
@@ -842,6 +842,7 @@ void CGame::consume()
     const int y = m_player.y();
     const uint8_t pu = m_map.at(x, y);
     const uint8_t rawData = m_map.getAttr(x, y);
+    const uint8_t triggerKey = rawData & FILTER_ATTR; // trigger key
     if (rawData & FLAG_HIDDEN)
     {
         // hidden tiles cannot be consumed
@@ -885,9 +886,13 @@ void CGame::consume()
     {
         addHealth(def.health);
     }
+    else if (def.type == TYPE_TRANS_SOURCE)
+    {
+        handleTeleport(triggerKey);
+        return;
+    }
     else if (def.type == TYPE_BACKGROUND ||
-             def.type == TYPE_TRANS_DEST ||
-             def.type == TYPE_TRANS_SOURCE)
+             def.type == TYPE_TRANS_DEST)
     {
         // do no consume blank or transporter
         return;
@@ -946,12 +951,10 @@ void CGame::consume()
         m_extraSpeedTimer = EXTRASPEED_TIMER;
     }
 
-    // trigger key
-    const uint8_t attr = rawData & FILTER_ATTR;
-    if (attr)
-        printf("attr : %.2x\n", attr);
-    if (attr != 0 &&
-        attr != ATTR_STOP &&
+    if (triggerKey)
+        printf("attr : %.2x\n", triggerKey);
+    if (triggerKey != 0 &&
+        triggerKey != ATTR_STOP &&
         def.type != TYPE_SWITCH &&
         def.type != TYPE_AUTO_ROPE &&
         def.type != TYPE_LADDER &&
@@ -959,7 +962,35 @@ void CGame::consume()
     {
         const uint8_t env = m_map.getAttr(x, y) & FILTER_ENV;
         m_map.setAttr(x, y, env);
-        triggerFlip(attr);
+        triggerFlip(triggerKey);
+    }
+}
+
+void CGame::handleTeleport(const uint8_t triggerKey)
+{
+    if (triggerKey == ATTR_STOP || triggerKey == 0)
+    {
+        return;
+    }
+
+    for (int y = 0; y < m_map.hei(); ++y)
+    {
+        for (int x = 0; x < m_map.len(); ++x)
+        {
+            const auto tileID = m_map.at(x, y);
+            const auto &def = getTileDef(tileID);
+            if (def.type != TYPE_TRANS_DEST)
+            {
+                continue;
+            }
+            const auto rawAttr = m_map.getAttr(x, y);
+            if ((rawAttr & FILTER_ATTR) == triggerKey &&
+                !(rawAttr & FLAG_HIDDEN))
+            {
+                m_player.setPos(x, y);
+                return;
+            }
+        }
     }
 }
 

@@ -96,6 +96,7 @@ private:
     void breakBridge();
     void addActor(const CActor &actor);
     bool manageJump(const uint8_t *joyState);
+    void handleTeleport(const uint8_t triggerKey);
 
     struct jump_t
     {
@@ -154,7 +155,7 @@ private:
     CMap m_map;
     jump_t m_jump;
     uint8_t m_keys[MAX_KEYS];
-    IndexVector m_mapIndex; // mapIndex for disk based file
-    std::string m_mapArch; // name of file to read level from
-    CMapArch *m_mapArchLocal=nullptr; // local copy of maparch
+    IndexVector m_mapIndex;             // mapIndex for disk based file
+    std::string m_mapArch;              // name of file to read level from
+    CMapArch *m_mapArchLocal = nullptr; // local copy of maparch
 };
