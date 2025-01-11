@@ -36,7 +36,7 @@ $ emrun build/cs4v2.html
 
 ### Map Editor
 
-Coming Soon
+[cs4-map-edit](https://github.com/cfrankb/cs4-map-edit)
 
 ### Play online
 

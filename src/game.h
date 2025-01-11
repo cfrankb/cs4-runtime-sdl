@@ -39,6 +39,7 @@ public:
     uint8_t *keys();
     bool hasKey(uint8_t c);
     CActor &player();
+    const CActor &playerConst() const;
     CMap &map();
     void nextLevel();
     void restartGame();

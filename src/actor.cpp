@@ -152,6 +152,10 @@ bool CActor::canMove(const int aim) const
     const uint8_t attr = rawData & FILTER_ATTR;
     if (m_type == TYPE_MONSTER && aim != Fall)
     {
+        if (isPlayerThere(aim))
+        {
+            return false;
+        }
         CActor tmp = *this;
         tmp.move(aim);
         if (tmp.canFall())
@@ -214,9 +218,8 @@ bool CActor::canMove(const int aim) const
 
 void CActor::move(const int aim, const bool saveAim)
 {
-    auto &game = *CGame::getGame();
-    Pos pos{m_x, m_y};
-    pos = game.translate(pos, aim);
+    const auto &game = *CGame::getGame();
+    const auto pos = game.translate(Pos{m_x, m_y}, aim);
     m_x = pos.x;
     m_y = pos.y;
     if (saveAim)
@@ -242,8 +245,8 @@ uint8_t CActor::findNextDir() const
 
 bool CActor::isPlayerThere(const uint8_t aim) const
 {
-    auto &game = *CGame::getGame();
-    const auto &player = game.player();
+    const auto &game = *CGame::getGame();
+    const auto &player = game.playerConst();
     if (aim == Here)
     {
         return player.x() == m_x && player.y() == m_y;
@@ -254,8 +257,8 @@ bool CActor::isPlayerThere(const uint8_t aim) const
 
 bool CActor::isMonsterThere(const uint8_t aim) const
 {
-    auto &game = *CGame::getGame();
-    auto &monsters = game.monsters();
+    const auto &game = *CGame::getGame();
+    const auto &monsters = game.monsters();
     const auto newPos = game.translate(Pos{m_x, m_y}, aim);
     for (size_t i = 0; i < monsters.size(); ++i)
     {

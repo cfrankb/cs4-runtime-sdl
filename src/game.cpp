@@ -840,6 +840,11 @@ CActor &CGame::player()
     return m_player;
 }
 
+const CActor &CGame::playerConst() const
+{
+    return m_player;
+}
+
 void CGame::consume()
 {
     const int x = m_player.x();
