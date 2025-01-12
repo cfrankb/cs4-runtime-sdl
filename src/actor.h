@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <stdint.h>
+#include <stdio.h>
 #include "map.h"
 
 #pragma once
@@ -46,6 +47,8 @@ public:
     bool isPlayerThere(const uint8_t aim) const;
     bool isMonsterThere(const uint8_t aim) const;
     const Pos pos() const;
+    bool read(FILE *sfile);
+    bool write(FILE *tfile);
 
     enum
     {

@@ -744,13 +744,111 @@ CGame *CGame::getGame()
     return g_gamePrivate;
 }
 
-bool CGame::read(FILE *)
+bool CGame::read(FILE *sfile)
 {
+    auto readfile = [sfile](auto ptr, auto size)
+    {
+        return fread(ptr, size, 1, sfile) == 1;
+    };
+
+    // check signature/version
+    uint32_t signature = 0;
+    readfile(&signature, sizeof(signature));
+    uint32_t version = 0;
+    readfile(&version, sizeof(version));
+    if (memcmp(GAME_SIGNATURE, &signature, sizeof(GAME_SIGNATURE)) != 0)
+    {
+        char sig[5] = {0, 0, 0, 0, 0};
+        memcpy(sig, &signature, sizeof(signature));
+        printf("savegame signature mismatched: %s\n", sig);
+        return false;
+    }
+    if (version != VERSION)
+    {
+        printf("savegame version mismatched: 0x%.8x\n", version);
+        return false;
+    }
+
+    // ptr
+    uint32_t indexPtr = 0;
+    readfile(&indexPtr, sizeof(indexPtr));
+
+    // general information
+    readfile(&m_lives, sizeof(m_lives));
+    readfile(&m_hp, sizeof(m_hp));
+    readfile(&m_level, sizeof(m_level));
+    readfile(&m_nextLife, sizeof(m_nextLife));
+    readfile(&m_goals, sizeof(m_goals));
+    readfile(&m_godModeTimer, sizeof(m_godModeTimer));
+    readfile(&m_extraSpeedTimer, sizeof(m_extraSpeedTimer));
+    readfile(m_keys, sizeof(m_keys));
+    readfile(&m_score, sizeof(m_score));
+    readfile(&m_ropes, sizeof(m_ropes));
+    readfile(&m_bulbs, sizeof(m_bulbs));
+    readfile(&m_oxygen, sizeof(m_oxygen));
+    memset(&m_jump, 0, sizeof(m_jump));
+    m_player.read(sfile);
+
+    // reading map
+    if (!m_map.read(sfile))
+    {
+        return false;
+    }
+
+    // monsters
+    uint32_t monsterCount = 0;
+    readfile(&monsterCount, sizeof(monsterCount));
+    m_actors.clear();
+    CActor monster;
+    for (int i = 0; i < monsterCount; ++i)
+    {
+        monster.read(sfile);
+        m_actors.push_back(monster);
+    }
     return true;
 }
 
-bool CGame::write(FILE *)
+bool CGame::write(FILE *tfile)
 {
+    auto writefile = [tfile](auto ptr, auto size)
+    {
+        return fwrite(ptr, size, 1, tfile) == 1;
+    };
+
+    // writing signature/version
+    writefile(&GAME_SIGNATURE, sizeof(GAME_SIGNATURE));
+    uint32_t version = VERSION;
+    writefile(&version, sizeof(version));
+
+    // ptr
+    uint32_t indexPtr = 0;
+    writefile(&indexPtr, sizeof(indexPtr));
+
+    // write general information
+    writefile(&m_lives, sizeof(m_lives));
+    writefile(&m_hp, sizeof(m_hp));
+    writefile(&m_level, sizeof(m_level));
+    writefile(&m_nextLife, sizeof(m_nextLife));
+    writefile(&m_goals, sizeof(m_goals));
+    writefile(&m_godModeTimer, sizeof(m_godModeTimer));
+    writefile(&m_extraSpeedTimer, sizeof(m_extraSpeedTimer));
+    writefile(m_keys, sizeof(m_keys));
+    writefile(&m_score, sizeof(m_score));
+    writefile(&m_ropes, sizeof(m_ropes));
+    writefile(&m_bulbs, sizeof(m_bulbs));
+    writefile(&m_oxygen, sizeof(m_oxygen));
+    m_player.write(tfile);
+
+    // saving map
+    m_map.write(tfile);
+
+    // monsters
+    uint32_t monsterCount = m_actors.size();
+    writefile(&monsterCount, sizeof(monsterCount));
+    for (int i = 0; i < monsterCount; ++i)
+    {
+        m_actors[i].write(tfile);
+    }
     return true;
 }
 

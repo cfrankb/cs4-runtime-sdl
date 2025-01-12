@@ -43,8 +43,8 @@ public:
     CMap &map();
     void nextLevel();
     void restartGame();
-    bool read(FILE *);
-    bool write(FILE *);
+    bool read(FILE *sfile);
+    bool write(FILE *tfile);
     void setLives(const int lives);
     int lives();
     int score();
@@ -109,6 +109,7 @@ private:
 
     enum : int
     {
+        VERSION = 0x20005000,
         TILE_SIZE = 16,
         DEFAULT_PLAYER_SPEED = 3,
         DEFAULT_LIVES = 5,
@@ -139,6 +140,7 @@ private:
         BUTTON = 6,
     };
 
+    static constexpr const char GAME_SIGNATURE[]{'C', 'S', '4', 'b'};
     int m_mode;
     int m_level;
     int m_lives;
