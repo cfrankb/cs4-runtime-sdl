@@ -28,11 +28,19 @@ public:
     void animate();
     uint8_t at(uint8_t tileID);
     int offset();
+    enum
+    {
+        NONE = 0,
+        DRONE = 1,
+        FULL = 3,
+    };
+
     struct animzSeq_t
     {
         const uint8_t tileID;
         const uint8_t animzID;
         const uint8_t count;
+        const uint8_t aimFilter = NONE;
     };
 
 protected:

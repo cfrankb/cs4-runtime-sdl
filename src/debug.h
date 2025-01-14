@@ -17,7 +17,7 @@
 */
 #pragma once
 
-void createLevelArchive();
+bool createLevelArchive();
 void generateData();
 void generateScreenshots();
 bool sanitize();

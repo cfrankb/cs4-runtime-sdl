@@ -70,8 +70,8 @@ protected:
         ATTR_STOP = 0x08,     // stop monsters
         FILTER_HAZARD = 0x03, // Water, Lava, Slime
         ENV_WATER = 1,        // water
-        ENV_FILTER = 7,
-        BOTTOM_FILTER = 4
+        ENV_FILTER = 7,       // hazard plus bottom flag
+        BOTTOM_FILTER = 4     // bit off: bottom; bit on: top
     };
 
     uint8_t m_x;      // x

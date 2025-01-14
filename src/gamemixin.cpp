@@ -723,7 +723,7 @@ void CGameMixin::drawScores(CFrame &bitmap)
     drawFont(bitmap, x, y * FONT_SIZE, t, WHITE);
     y += 2;
 
-    for (uint i = 0; i < MAX_SCORES; ++i)
+    for (uint32_t i = 0; i < MAX_SCORES; ++i)
     {
         uint32_t color = i & INTERLINES ? CYAN : BLUE;
         if (m_recordScore && m_scoreRank == i)
