@@ -91,7 +91,7 @@ def main():
 
     tile_defs = []
     tiles = {}
-    types = {}
+    cache = {}
     lines = list[str]
     with open ('tiles.ini') as sfile:
         lines = sfile.read().split('\n')
@@ -102,21 +102,16 @@ def main():
     for line in lines:
         line_num += 1
         line = line.strip().replace('\t', ' ')
-        if not line:
-            continue
-        if line[0] == '#':
-            continue
-
-        if line[0] == '[':
+        if not line or line[0] == '#':
+            pass
+        elif line[0] == '[':
             if section:
                 defines.append('')
-            section = line[1:-1]
+            section = line[1:-1].lower()
             if section != 'tiledefs':
                 defines.append(f'// {section}')
             i = 0
-            continue
-
-        if section:
+        elif section:
             pair = get_pair(line)
             if not pair:
                 continue
@@ -125,33 +120,44 @@ def main():
             prefix = def_name[0:len(section)]
             if prefix.upper() != section.upper():
                 def_name = f'{section.upper()}_{def_name}'
-            if section == 'type':
-                types[def_name_raw] = 0
             c = line.split('#',1)
             name = c[1].strip() if len(c) > 1 else ''
+            k = 1
+            val = i
+            if len(pair) > 1 and len(pair[1]) in (2,3) and pair[1][0].isalnum():
+                try:
+                    val = int(pair[1],16)
+                except:
+                    print(f'warning: failed to parse `{pair[1]}` as hex on line {line_num}')
+                k = 2
+            if section not in cache:
+                cache[section] = {}
+            cache[section][def_name_raw.lower()] = val
             if section == 'tiledefs':
                 if def_name_raw not in tiles:
-                    print(f'missing tile {def_name_raw} in tiles on line {line_num}')
+                    print(f'error: missing tile {def_name_raw} in tiles on line {line_num}')
                     continue
                 tile_id = tiles[def_name_raw]
                 for j in range(1, len(pair)):
                     e = pair[j].split(':')
                     if (len(e) != 2):
-                        print(f"missing pair value on line {line_num}")
+                        print(f"error: missing pair value on line {line_num}")
                         continue
                     k,v= tuple(e)
-                    if v[0] == '-':
+                    if v[0] in ('-', '+') or v[0].isnumeric():
                         value = v
                     else:
+                        kl = k.lower()
+                        vl = v.lower()
+                        if kl in cache and vl not in cache[kl]:
+                            print(f"error: `{vl}` missing from `{kl}` on line {line_num}")
                         value = f'{k.upper()}_{v.upper()}'
-                    setattr(tile_defs[tile_id], k, value)
+                    if not hasattr(tile_defs[tile_id], k):
+                        print(f"error: invalid attr `{k}` on line {line_num}")
+                    else:
+                        setattr(tile_defs[tile_id], k, value)
                 continue
-            if len(pair) > 1 and len(pair[1]) == 2 :
-                k = 2
-                val = int(pair[1],16)
-            else:
-                k = 1
-                val = i
+
             defines.append(f'#define {def_name:32} 0x{val:0>2x}' + (f' // {name}' if name else ''))
             if section == 'tiles':
                 tiles[def_name] = val
@@ -166,10 +172,10 @@ def main():
                         elif pair[j][0] == '$':
                            score = int(pair[j][1:])
                         else:
-                            print(f'unknown param `${pair[j]}` on line ${line}')
+                            print(f'invalid tile param `${pair[j]}` on line ${line}')
                 if len(pair) > k:
                     type_name = pair[k]
-                    if type_name not in types:
+                    if type_name.lower() not in cache['type']:
                         print(f'type_name {type_name} on line {line_num} not found')
                     else:
                         tile = TileDef()
