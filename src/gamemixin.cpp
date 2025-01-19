@@ -49,7 +49,7 @@ CGameMixin::CGameMixin()
     m_animator = new CAnimator();
     m_prompt = PROMPT_NONE;
     clearJoyStates();
-    // clearScores();
+    clearScores();
     clearKeyStates();
 }
 
@@ -689,8 +689,8 @@ int CGameMixin::rankScore()
         return INVALID;
     }
 
-    uint32_t i;
-    for (i = 0; i < MAX_SCORES; ++i)
+    int32_t i;
+    for (i = 0; i < static_cast<int32_t>(MAX_SCORES); ++i)
     {
         if (score > m_hiscores[i].score)
         {
@@ -698,7 +698,7 @@ int CGameMixin::rankScore()
         }
     }
 
-    for (uint32_t j = MAX_SCORES - 2; j >= i; --j)
+    for (int32_t j = static_cast<int32_t>(MAX_SCORES) - 2; j >= i; --j)
     {
         m_hiscores[j + 1] = m_hiscores[j];
     }
