@@ -103,8 +103,10 @@ def main():
         line_num += 1
         line = line.strip().replace('\t', ' ')
         if not line or line[0] == '#':
+            # skip empty lines and comments
             pass
         elif line[0] == '[':
+            # process section head
             if section:
                 defines.append('')
             section = line[1:-1].lower()
@@ -128,11 +130,12 @@ def main():
                 try:
                     val = int(pair[1],16)
                 except:
-                    print(f'warning: failed to parse `{pair[1]}` as hex on line {line_num}')
+                    print(f'warning: failed to parse `{pair[1]}` as hex value on line {line_num}')
                 k = 2
             if section not in cache:
                 cache[section] = {}
             cache[section][def_name_raw.lower()] = val
+
             if section == 'tiledefs':
                 if def_name_raw not in tiles:
                     print(f'error: missing tile {def_name_raw} in tiles on line {line_num}')
@@ -141,7 +144,7 @@ def main():
                 for j in range(1, len(pair)):
                     e = pair[j].split(':')
                     if (len(e) != 2):
-                        print(f"error: missing pair value on line {line_num}")
+                        print(f"error: invalid pair value `{pair[j]}` on line {line_num}")
                         continue
                     k,v= tuple(e)
                     if v[0] in ('-', '+') or v[0].isnumeric():
@@ -156,9 +159,9 @@ def main():
                         print(f"error: invalid attr `{k}` on line {line_num}")
                     else:
                         setattr(tile_defs[tile_id], k, value)
-                continue
+            else:
+                defines.append(f'#define {def_name:32} 0x{val:0>2x}' + (f' // {name}' if name else ''))
 
-            defines.append(f'#define {def_name:32} 0x{val:0>2x}' + (f' // {name}' if name else ''))
             if section == 'tiles':
                 tiles[def_name] = val
                 score = 0

@@ -24,11 +24,11 @@
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
-const char HISCORE_FILE[] = "/offline/hiscores.dat";
-const char SAVEGAME_FILE[] = "/offline/savegame.dat";
+const char HISCORE_FILE[] = "/offline/hiscores-cs4.dat";
+const char SAVEGAME_FILE[] = "/offline/savegame-cs4.dat";
 #else
-const char HISCORE_FILE[] = "hiscores.dat";
-const char SAVEGAME_FILE[] = "savegame.dat";
+const char HISCORE_FILE[] = "hiscores-cs4.dat";
+const char SAVEGAME_FILE[] = "savegame-cs4.dat";
 #endif
 
 CRuntime::CRuntime() : CGameMixin()
